@@ -21,6 +21,8 @@
   "dependencies": {
     "@slack/bolt": "^3.8.1",
     "@slack/client": "^5.0.2",
+    "@slack/events-api": "^3.0.1",
+    "@slack/interactive-messages": "^2.0.2",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.24.1",
