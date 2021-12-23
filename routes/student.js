@@ -33,13 +33,13 @@ router.post("/", async (req, res) => {
               name: "slack",
               text: "In on Slack",
               type: "button",
-              value: "ping:instructor",
+              value: req.body.channel_id,
             },
             {
               name: "zoom",
               text: "In on Zoom",
               type: "button",
-              value: "zoom",
+              value: req.body.channel_id,
             },
             {
               name: "complete",
@@ -97,9 +97,15 @@ router.post("/notify", async (req, res) => {
       await client.chat.postMessage({
         response_type: 'status',
         channel: "C02S3U4NPFT",
-        text: (payload.user.name) + " in with " + (payload.original_message.text),
+        text: (payload.user.name) + " // " + (payload.original_message.text),
       });
-    }
+    }else if(payload.actions[0].name === "slack"){
+		await client.chat.postMessage({
+			response_type: 'status',
+			channel: payload.actions[0].value,
+			text: (":eyes:"),
+		  });
+	}
 
     return;
   } catch (error) {
