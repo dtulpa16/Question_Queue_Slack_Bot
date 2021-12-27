@@ -22,8 +22,11 @@ router.post("/", async (req, res) => {
       response_type: "in_channel",
       channel: channelId,
 
-      text: req.body.channel_name,
+      text: "Channel: " + req.body.channel_name,
       attachments: [
+        {
+          text: "Queued by: " + req.body.user_name,
+        },
         {
           text: "Message: " + req.body.text,
           callback_id: "ping:instructor",
@@ -47,13 +50,9 @@ router.post("/", async (req, res) => {
               style: "primary",
               type: "button",
               value: "complete",
-              confirm: {
-                title: "Are you sure?",
-                ok_text: "Yes",
-                dismiss_text: "No",
-              },
             },
           ],
+          
         },
       ],
     });
@@ -82,8 +81,7 @@ router.post("/", async (req, res) => {
       ],
     });
 
-    console.log(studentResult);
-    return res.send("Your question has been added to the queue!");
+    return res.send("Question added to queue!");
   } catch (error) {
     console.error(error);
   }
@@ -95,17 +93,33 @@ router.post("/notify", async (req, res) => {
     console.log("payload ", payload);
     if (payload.actions[0].name === "zoom") {
       await client.chat.postMessage({
-        response_type: 'status',
+        response_type: "status",
         channel: "C02S3U4NPFT",
-        text: (payload.user.name) + " // " + (payload.original_message.text),
+        text: payload.user.name + " // " + payload.original_message.text,
       });
-    }else if(payload.actions[0].name === "slack"){
-		await client.chat.postMessage({
-			response_type: 'status',
-			channel: payload.actions[0].value,
-			text: (":eyes:"),
-		  });
-	}
+    } else if (payload.actions[0].name === "slack") {
+      await client.chat.postMessage({
+        response_type: "status",
+        channel: payload.actions[0].value,
+        text: "Taking a look! :eyes:",
+      });
+    } else if (payload.actions[0].name === "complete") {
+      const messageId = payload.original_message.ts;
+      // The ID of the channel that contains the message
+      const channelId = payload.channel.id;
+
+      try {
+        // Call the chat.delete method using the WebClient
+        const result = await client.chat.delete({
+          channel: channelId,
+          ts: messageId,
+        });
+
+        console.log(result);
+      } catch (error) {
+        console.error(error);
+      }
+    }
 
     return;
   } catch (error) {
