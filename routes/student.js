@@ -2,7 +2,7 @@ const Student = require("../models/student");
 const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
-const { qCardModal } = require("./helpers");
+const { qCardModal, postToInstructors } = require("./helpers");
 
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
@@ -12,85 +12,25 @@ const client = new WebClient(
     logLevel: LogLevel.DEBUG,
   }
 );
+let reqData = ''
+let resData = ''
 
 router.post("/", async (req, res) => {
-  const channelId = "C02RM992Y1H";
-
-  try {
-    // Call the chat.postMessage method using the WebClient
-    const result = await client.chat.postMessage({
-      response_type: "in_channel",
-      channel: channelId,
-
-      text: "Channel: " + req.body.channel_name,
-      attachments: [
-        {
-          text: "Queued by: " + req.body.user_name,
-        },
-        {
-          text: "Message: " + req.body.text,
-          callback_id: "ping:instructor",
-          color: "#3AA3E3",
-          actions: [
-            {
-              name: "slack",
-              text: "In on Slack",
-              type: "button",
-              value: req.body.channel_id,
-            },
-            {
-              name: "zoom",
-              text: "In on Zoom",
-              type: "button",
-              value: req.body.channel_id,
-            },
-            {
-              name: "complete",
-              text: "Completed",
-              style: "primary",
-              type: "button",
-              value: "complete",
-            },
-          ],
-        },
-      ],
-    });
-
-    const studentResult = await client.chat.postMessage({
-      response_type: "in_channel",
-      channel: "C02RT1MT4S0",
-      text: req.body.channel_name,
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `Channel - *${req.body.channel_name}*`,
-          },
-        },
-        {
-          type: "context",
-          elements: [
-            {
-              type: "mrkdwn",
-              text: "Message: " + req.body.text,
-            },
-          ],
-        },
-      ],
-    });
-    qCardModal(req.body);
-    return res.send("Question added to queue!");
-  } catch (error) {
-    console.error(error);
-  }
+  reqData = req
+  resData = res
+  qCardModal(req,res);
+  
 });
 
 router.post("/notify", async (req, res) => {
   try {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
-    if (payload.actions[0].name === "zoom") {
+    if (payload.type === "view_submission"){
+      postToInstructors(reqData,res)
+      return res.status(200).send('')
+    }
+    else if (payload.actions[0].name === "zoom") {
       await client.chat.postMessage({
         response_type: "status",
         channel: "C02S3U4NPFT",
@@ -116,7 +56,7 @@ router.post("/notify", async (req, res) => {
         console.log(result);
       } catch (error) {
         console.error(error);
-      }
+      } 
     }
 
     return;

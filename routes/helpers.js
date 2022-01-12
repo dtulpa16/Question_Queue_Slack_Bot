@@ -8,12 +8,14 @@ const client = new WebClient(
   }
 );
 
-const qCardModal = async (data) => {
-//   console.log(data);
+const qCardModal = async (data, res) => {
+  //   console.log(data);
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
-      trigger_id: data.trigger_id,
+      trigger_id: data.body.trigger_id,
+      
+      response_action: "clear",
       view: {
         type: "modal",
         callback_id: "gratitude-modal",
@@ -88,11 +90,83 @@ const qCardModal = async (data) => {
         ],
       },
     });
+    return res.status(200).send('')
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-    console.log(result.view.blocks);
+const postToInstructors = async (req, res) => {
+  try {
+    const channelId = "C02RM992Y1H";
+    // Call the chat.postMessage method using the WebClient
+    const result = await client.chat.postMessage({
+      response_type: "in_channel",
+      channel: channelId,
+
+      text: "Channel: " + req.body.channel_name,
+      attachments: [
+        {
+          text: "Queued by: " + req.body.user_name,
+        },
+        {
+          text: "Message: " + req.body.text,
+          callback_id: "ping:instructor",
+          color: "#3AA3E3",
+          actions: [
+            {
+              name: "slack",
+              text: "In on Slack",
+              type: "button",
+              value: req.body.channel_id,
+            },
+            {
+              name: "zoom",
+              text: "In on Zoom",
+              type: "button",
+              value: req.body.channel_id,
+            },
+            {
+              name: "complete",
+              text: "Completed",
+              style: "primary",
+              type: "button",
+              value: "complete",
+            },
+          ],
+        },
+      ],
+    });
+
+    const studentResult = await client.chat.postMessage({
+      response_type: "in_channel",
+      channel: "C02RT1MT4S0",
+      text: req.body.channel_name,
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `Channel - *${req.body.channel_name}*`,
+          },
+        },
+        {
+          type: "context",
+          elements: [
+            {
+              type: "mrkdwn",
+              text: "Message: " + req.body.text,
+            },
+          ],
+        },
+      ],
+    });
+
+    return res.send("Question added to queue!");
   } catch (error) {
     console.error(error);
   }
 };
 
 exports.qCardModal = qCardModal;
+exports.postToInstructors = postToInstructors;
