@@ -2,6 +2,7 @@ const Student = require("../models/student");
 const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
+const { qCardModal } = require("./helpers");
 
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
@@ -13,7 +14,6 @@ const client = new WebClient(
 );
 
 router.post("/", async (req, res) => {
-  console.log(req.body);
   const channelId = "C02RM992Y1H";
 
   try {
@@ -52,7 +52,6 @@ router.post("/", async (req, res) => {
               value: "complete",
             },
           ],
-          
         },
       ],
     });
@@ -80,7 +79,7 @@ router.post("/", async (req, res) => {
         },
       ],
     });
-
+    qCardModal(req.body);
     return res.send("Question added to queue!");
   } catch (error) {
     console.error(error);
@@ -107,7 +106,6 @@ router.post("/notify", async (req, res) => {
       const messageId = payload.original_message.ts;
       // The ID of the channel that contains the message
       const channelId = payload.channel.id;
-
       try {
         // Call the chat.delete method using the WebClient
         const result = await client.chat.delete({
