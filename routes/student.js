@@ -2,7 +2,7 @@ const Student = require("../models/student");
 const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
-const { qCardModal, postToInstructors } = require("./helpers");
+const { qCardModal, postQ } = require("./helpers");
 
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
@@ -27,36 +27,38 @@ router.post("/notify", async (req, res) => {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
     if (payload.type === "view_submission"){
-      postToInstructors(reqData,res)
+      postQ(reqData,res, payload)
       return res.status(200).send('')
-    }
-    else if (payload.actions[0].name === "zoom") {
-      await client.chat.postMessage({
-        response_type: "status",
-        channel: "C02S3U4NPFT",
-        text: payload.user.name + " // " + payload.original_message.text,
-      });
-    } else if (payload.actions[0].name === "slack") {
-      await client.chat.postMessage({
-        response_type: "status",
-        channel: payload.actions[0].value,
-        text: "Taking a look! :eyes:",
-      });
-    } else if (payload.actions[0].name === "complete") {
-      const messageId = payload.original_message.ts;
-      // The ID of the channel that contains the message
-      const channelId = payload.channel.id;
-      try {
-        // Call the chat.delete method using the WebClient
-        const result = await client.chat.delete({
-          channel: channelId,
-          ts: messageId,
+    }else if(payload.type === 'interactive_message'){
+      if (payload.actions[0].name === "zoom") {
+        await client.chat.postMessage({
+          response_type: "status",
+          channel: "C02S3U4NPFT",
+          text: payload.user.name + " // " + payload.original_message.text,
         });
+      } else if (payload.actions[0].name === "slack") {
+        await client.chat.postMessage({
+          response_type: "status",
+          channel: payload.actions[0].value,
+          text: "Taking a look! :eyes:",
+        });
+      } else if (payload.actions[0].name === "complete") {
+        const messageId = payload.original_message.ts;
+        // The ID of the channel that contains the message
+        const channelId = payload.channel.id;
+        try {
+          // Call the chat.delete method using the WebClient
+          const result = await client.chat.delete({
+            channel: channelId,
+            ts: messageId,
+          });
+  
+          console.log(result);
+        } catch (error) {
+          console.error(error);
+        } 
 
-        console.log(result);
-      } catch (error) {
-        console.error(error);
-      } 
+    }
     }
 
     return;

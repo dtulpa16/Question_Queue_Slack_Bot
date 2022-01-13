@@ -7,8 +7,12 @@ const client = new WebClient(
     logLevel: LogLevel.DEBUG,
   }
 );
-
+let originalReq = ''
+const oxygenQueueChannel = 'C02U02XA55J'
+const hydrogenQueueChannel = 'C02TXPC0TQS'
 const qCardModal = async (data, res) => {
+  originalReq = data
+  console.log("OG Req ",originalReq.body)
   //   console.log(data);
   try {
     // Call the views.open method using the WebClient passed to listeners
@@ -96,7 +100,9 @@ const qCardModal = async (data, res) => {
   }
 };
 
-const postToInstructors = async (req, res) => {
+const postQ = async (req, res,payload) => {
+  console.log(payload)
+    console.log(payload.view.state.values)
   try {
     const channelId = "C02RM992Y1H";
     // Call the chat.postMessage method using the WebClient
@@ -110,7 +116,15 @@ const postToInstructors = async (req, res) => {
           text: "Queued by: " + req.body.user_name,
         },
         {
-          text: "Message: " + req.body.text,
+          text: `Q Card:
+          What is the task you are trying to accomplish? What is the goal? \n
+          *${payload.view.state.values[1].my_action.value}* \n
+          What do you think the problem or impediment is? \n
+          *${payload.view.state.values[2].my_action.value}*\n
+          What have you specifically tried in your code? \n
+          *${payload.view.state.values[3].my_action.value}*\n
+          What did you learn by dropping a breakpoint? \n
+          *${payload.view.state.values[4].my_action.value}*\n`,
           callback_id: "ping:instructor",
           color: "#3AA3E3",
           actions: [
@@ -138,7 +152,10 @@ const postToInstructors = async (req, res) => {
       ],
     });
 
-    const studentResult = await client.chat.postMessage({
+
+    let studentName = req.body.channel_name.split('_')
+    console.log("Students channel", studentName[2])
+    await client.chat.postMessage({
       response_type: "in_channel",
       channel: "C02RT1MT4S0",
       text: req.body.channel_name,
@@ -147,26 +164,65 @@ const postToInstructors = async (req, res) => {
           type: "section",
           text: {
             type: "mrkdwn",
-            text: `Channel - *${req.body.channel_name}*`,
+            text: `*${studentName[0]}*`,
           },
         },
-        {
-          type: "context",
-          elements: [
-            {
-              type: "mrkdwn",
-              text: "Message: " + req.body.text,
-            },
-          ],
-        },
       ],
+    });
+    if(studentName[1]==="hydrogen"){
+      await client.chat.postMessage({
+        response_type: "in_channel",
+        channel: hydrogenQueueChannel,
+        text: req.body.channel_name,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+    }else if(studentName[1]==="oxygen"){
+      await client.chat.postMessage({
+        response_type: "in_channel",
+        channel: hydrogenQueueChannel,
+        text: req.body.channel_name,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+    }
+
+
+    await client.chat.postMessage({
+      response_type: "in_channel",
+      channel: originalReq.body.channel_id,
+      text: `Q Card:
+          What is the task you are trying to accomplish? What is the goal? \n
+          *${payload.view.state.values[1].my_action.value}* \n
+          What do you think the problem or impediment is? \n
+          *${payload.view.state.values[2].my_action.value}*\n
+          What have you specifically tried in your code? \n
+          *${payload.view.state.values[3].my_action.value}*\n
+          What did you learn by dropping a breakpoint? \n
+          *${payload.view.state.values[4].my_action.value}*\n`,
     });
 
     return res.send("Question added to queue!");
   } catch (error) {
+
     console.error(error);
+
   }
 };
 
 exports.qCardModal = qCardModal;
-exports.postToInstructors = postToInstructors;
+exports.postQ = postQ;
