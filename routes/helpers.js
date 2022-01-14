@@ -1,8 +1,9 @@
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { App } = require("@slack/bolt");
 const { WebClient, LogLevel } = require("@slack/web-api");
+const botToken = require("../keys/keys")
 const client = new WebClient(
-  "xoxb-2871309273444-2869273753251-Jp4UKNdMJxnPFDM5LdZ8dZF9",
+  botToken.botToken,
   {
     logLevel: LogLevel.DEBUG,
   }
@@ -10,6 +11,7 @@ const client = new WebClient(
 let originalReq = "";
 const oxygenQueueChannel = "C02U02XA55J";
 const hydrogenQueueChannel = "C02TXPC0TQS";
+let tempQueue = []
 const qCardModal = async (data, res) => {
   originalReq = data;
 
@@ -152,7 +154,7 @@ const postQ = async (req, res, payload) => {
     });
 
     let studentName = req.body.channel_name.split("_");
-    console.log("Students channel", studentName[2]);
+
     await client.chat.postMessage({
       response_type: "in_channel",
       channel: "C02RT1MT4S0",
@@ -168,7 +170,7 @@ const postQ = async (req, res, payload) => {
       ],
     });
     if (studentName[1] === "hydrogen") {
-      await client.chat.postMessage({
+      let hydro = await client.chat.postMessage({
         response_type: "in_channel",
         channel: hydrogenQueueChannel,
         text: req.body.channel_name,
@@ -182,6 +184,7 @@ const postQ = async (req, res, payload) => {
           },
         ],
       });
+      tempQueue.push(hydro.ts)
     } else if (studentName[1] === "oxygen") {
       await client.chat.postMessage({
         response_type: "in_channel",
@@ -232,6 +235,8 @@ const postQ = async (req, res, payload) => {
     console.error(error);
   }
 };
+
+
 
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;

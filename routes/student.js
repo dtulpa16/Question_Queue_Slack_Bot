@@ -3,10 +3,10 @@ const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { qCardModal, postQ } = require("./helpers");
-
+const botToken = require("../keys/keys")
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
-  "xoxb-2871309273444-2869273753251-Jp4UKNdMJxnPFDM5LdZ8dZF9",
+  botToken.botToken,
   {
     // LogLevel can be imported and used to make debugging simpler
     logLevel: LogLevel.DEBUG,
@@ -14,11 +14,9 @@ const client = new WebClient(
 );
 let reqData = "";
 let resData = "";
+let tempQueue = []
 
 router.post("/", async (req, res) => {
-  if(req.body.text === "hmmm"){
-    
-  }
   reqData = req;
   resData = res;
   qCardModal(req, res);
