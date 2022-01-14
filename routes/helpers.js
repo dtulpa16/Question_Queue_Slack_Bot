@@ -7,18 +7,17 @@ const client = new WebClient(
     logLevel: LogLevel.DEBUG,
   }
 );
-let originalReq = ''
-const oxygenQueueChannel = 'C02U02XA55J'
-const hydrogenQueueChannel = 'C02TXPC0TQS'
+let originalReq = "";
+const oxygenQueueChannel = "C02U02XA55J";
+const hydrogenQueueChannel = "C02TXPC0TQS";
 const qCardModal = async (data, res) => {
-  originalReq = data
-  console.log("OG Req ",originalReq.body)
-  //   console.log(data);
+  originalReq = data;
+
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
       trigger_id: data.body.trigger_id,
-      
+
       response_action: "clear",
       view: {
         type: "modal",
@@ -70,6 +69,7 @@ const qCardModal = async (data, res) => {
             block_id: "3",
             element: {
               type: "plain_text_input",
+              multiline: true,
               action_id: "my_action",
             },
             label: {
@@ -83,6 +83,7 @@ const qCardModal = async (data, res) => {
             block_id: "4",
             element: {
               type: "plain_text_input",
+              multiline: true,
               action_id: "my_action",
             },
             label: {
@@ -94,15 +95,13 @@ const qCardModal = async (data, res) => {
         ],
       },
     });
-    return res.status(200).send('')
+    return res.status(200).send("");
   } catch (error) {
     console.error(error);
   }
 };
 
-const postQ = async (req, res,payload) => {
-  console.log(payload)
-    console.log(payload.view.state.values)
+const postQ = async (req, res, payload) => {
   try {
     const channelId = "C02RM992Y1H";
     // Call the chat.postMessage method using the WebClient
@@ -152,9 +151,8 @@ const postQ = async (req, res,payload) => {
       ],
     });
 
-
-    let studentName = req.body.channel_name.split('_')
-    console.log("Students channel", studentName[2])
+    let studentName = req.body.channel_name.split("_");
+    console.log("Students channel", studentName[2]);
     await client.chat.postMessage({
       response_type: "in_channel",
       channel: "C02RT1MT4S0",
@@ -169,7 +167,7 @@ const postQ = async (req, res,payload) => {
         },
       ],
     });
-    if(studentName[1]==="hydrogen"){
+    if (studentName[1] === "hydrogen") {
       await client.chat.postMessage({
         response_type: "in_channel",
         channel: hydrogenQueueChannel,
@@ -184,7 +182,7 @@ const postQ = async (req, res,payload) => {
           },
         ],
       });
-    }else if(studentName[1]==="oxygen"){
+    } else if (studentName[1] === "oxygen") {
       await client.chat.postMessage({
         response_type: "in_channel",
         channel: hydrogenQueueChannel,
@@ -201,11 +199,12 @@ const postQ = async (req, res,payload) => {
       });
     }
 
-
     await client.chat.postMessage({
       response_type: "in_channel",
       channel: originalReq.body.channel_id,
-      text: `Q Card:
+      attachments: [
+        {
+          text: `Q Card:
           What is the task you are trying to accomplish? What is the goal? \n
           *${payload.view.state.values[1].my_action.value}* \n
           What do you think the problem or impediment is? \n
@@ -214,13 +213,23 @@ const postQ = async (req, res,payload) => {
           *${payload.view.state.values[3].my_action.value}*\n
           What did you learn by dropping a breakpoint? \n
           *${payload.view.state.values[4].my_action.value}*\n`,
+          callback_id: "ping:instructor",
+          color: "#3AA3E3",
+          actions: [
+            {
+              name: "resolved",
+              text: "Resolved",
+              type: "button",
+              value: req.body.channel_id,
+            },
+          ],
+        },
+      ],
     });
 
     return res.send("Question added to queue!");
   } catch (error) {
-
     console.error(error);
-
   }
 };
 
