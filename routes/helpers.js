@@ -1,17 +1,15 @@
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const { App } = require("@slack/bolt");
 const { WebClient, LogLevel } = require("@slack/web-api");
-const botToken = require("../keys/keys")
-const client = new WebClient(
-  botToken.botToken,
-  {
-    logLevel: LogLevel.DEBUG,
-  }
-);
+const botToken = require("../keys/keys");
+const client = new WebClient(botToken.botToken, {
+  logLevel: LogLevel.DEBUG,
+});
 let originalReq = "";
 const oxygenQueueChannel = "C02U02XA55J";
 const hydrogenQueueChannel = "C02TXPC0TQS";
-let tempQueue = []
+let tempQueue = [];
+
 const qCardModal = async (data, res) => {
   originalReq = data;
 
@@ -111,7 +109,7 @@ const postQ = async (req, res, payload) => {
       response_type: "in_channel",
       channel: channelId,
 
-      text: "Channel: " + req.body.channel_name,
+      text: req.body.channel_name,
       attachments: [
         {
           text: "Queued by: " + req.body.user_name,
@@ -184,11 +182,19 @@ const postQ = async (req, res, payload) => {
           },
         ],
       });
-      tempQueue.push(hydro.ts)
+      console.log(hydro);
+
+      tempQueue.push({
+        name: hydro.message.text,
+        channel: hydro.channel,
+        ts: hydro.ts,
+      });
+
+      console.log(tempQueue);
     } else if (studentName[1] === "oxygen") {
-      await client.chat.postMessage({
+      let oxy = await client.chat.postMessage({
         response_type: "in_channel",
-        channel: hydrogenQueueChannel,
+        channel: oxygenQueueChannel,
         text: req.body.channel_name,
         blocks: [
           {
@@ -199,6 +205,11 @@ const postQ = async (req, res, payload) => {
             },
           },
         ],
+      });
+      tempQueue.push({
+        name: oxy.message.text,
+        channel: oxy.channel,
+        ts: oxy.ts,
       });
     }
 
@@ -236,7 +247,23 @@ const postQ = async (req, res, payload) => {
   }
 };
 
+const removeFromQueue = async(data) => {
+  console.log(data)
+  let studentToDelete = tempQueue.filter((e)=>{
+    if(e.name === data){
+      return true
+    }
+  })
+  await client.chat.delete({
+    channel: studentToDelete[0].channel,
+    ts: studentToDelete[0].ts,
+  });
 
+  const removeStudent = tempQueue.findIndex(e=>e.name === data)
+  tempQueue.splice(removeStudent,1)
+  console.log(tempQueue)
+};
 
+exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;

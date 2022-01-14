@@ -2,7 +2,7 @@ const Student = require("../models/student");
 const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
-const { qCardModal, postQ } = require("./helpers");
+const { qCardModal, postQ, removeFromQueue } = require("./helpers");
 const botToken = require("../keys/keys")
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
@@ -65,7 +65,7 @@ router.post("/notify", async (req, res) => {
             channel: channelId,
             ts: messageId,
           });
-
+          removeFromQueue(payload.original_message.text)
           console.log("");
         } catch (error) {
           console.error(error);
