@@ -45,6 +45,7 @@ const qCardModal = async (data, res) => {
             element: {
               type: "plain_text_input",
               action_id: "my_action",
+              min_length:50,
             },
             label: {
               type: "plain_text",
@@ -58,6 +59,7 @@ const qCardModal = async (data, res) => {
             element: {
               type: "plain_text_input",
               action_id: "my_action",
+              min_length:50,
             },
             label: {
               type: "plain_text",
@@ -72,6 +74,7 @@ const qCardModal = async (data, res) => {
               type: "plain_text_input",
               multiline: true,
               action_id: "my_action",
+              min_length:50,
             },
             label: {
               type: "plain_text",
@@ -86,6 +89,7 @@ const qCardModal = async (data, res) => {
               type: "plain_text_input",
               multiline: true,
               action_id: "my_action",
+              min_length:10,
             },
             label: {
               type: "plain_text",
@@ -201,7 +205,7 @@ const postQ = async (req, res, payload) => {
 
     //General queue
     await client.chat.postMessage({
-      response_type: "in_channel",
+      response_type: "status",
       channel: "C02RT1MT4S0",
       text: req.body.channel_name,
       attachments: [
@@ -220,7 +224,7 @@ const postQ = async (req, res, payload) => {
     });
     if (studentName[1] === "hydrogen") {
       let hydro = await client.chat.postMessage({
-        response_type: "in_channel",
+        response_type: "status",
         channel: hydrogenQueueChannel,
         text: req.body.channel_name,
         blocks: [
@@ -244,7 +248,7 @@ const postQ = async (req, res, payload) => {
       console.log(tempQueue);
     } else if (studentName[1] === "oxygen") {
       let oxy = await client.chat.postMessage({
-        response_type: "in_channel",
+        response_type: "status",
         channel: oxygenQueueChannel,
         text: req.body.channel_name,
         blocks: [
@@ -264,7 +268,7 @@ const postQ = async (req, res, payload) => {
       });
     }
 
-    console.log("");
+    return res.status(200).send("");
   } catch (error) {
     console.error(error);
   }
@@ -278,6 +282,7 @@ const removeFromQueue = async (data) => {
     }
   });
   await client.chat.delete({
+    response_type:'status',
     channel: studentToDelete[0].channel,
     ts: studentToDelete[0].ts,
   });
@@ -285,6 +290,7 @@ const removeFromQueue = async (data) => {
   const removeStudent = tempQueue.findIndex((e) => e.name === data);
   tempQueue.splice(removeStudent, 1);
   console.log(tempQueue);
+  
 };
 
 exports.removeFromQueue = removeFromQueue;
