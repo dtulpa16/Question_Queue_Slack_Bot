@@ -29,6 +29,7 @@ router.post("/notify", async (req, res) => {
   try {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
+
     if (payload.type === "view_submission") {
       postQ(reqData, res, payload);
       return res.status(200).send("");
@@ -40,6 +41,7 @@ router.post("/notify", async (req, res) => {
           text: payload.user.name + " // " + payload.original_message.text,
         });
         client.reactions.add({
+          response_type: "status",
           channel: payload.channel.id,
           name:"heavy_check_mark",
           timestamp:payload.message_ts
@@ -51,10 +53,12 @@ router.post("/notify", async (req, res) => {
           text: "Taking a look! :eyes:",
         });
         client.reactions.add({
+          response_type: "status",
           channel: payload.channel.id,
           name:"eyes",
           timestamp:payload.message_ts
         })
+        return res.status(200).send("");
       } else if (payload.actions[0].name === "complete") {
         const messageId = payload.original_message.ts;
         // The ID of the channel that contains the message
@@ -62,17 +66,19 @@ router.post("/notify", async (req, res) => {
         try {
           // Call the chat.delete method using the WebClient
           const result = await client.chat.delete({
+            
             channel: channelId,
             ts: messageId,
           });
           removeFromQueue(payload.original_message.text)
-          console.log("");
+          
         } catch (error) {
           console.error(error);
         }
       }
       else if (payload.actions[0].name === "resolved"){
         await client.reactions.add({
+          response_type: "status",
           channel: payload.channel.id,
           name:"white_check_mark",
           timestamp:payload.message_ts
@@ -81,7 +87,7 @@ router.post("/notify", async (req, res) => {
       }
     }
 
-    return console.log('');
+    return res.status(200).send("");
   } catch (error) {
     console.error(error);
   }
