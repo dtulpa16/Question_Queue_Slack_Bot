@@ -10,7 +10,10 @@ const client = new WebClient(botToken.botToken, {
 let originalReq = "";
 const oxygenQueueChannel = "C02U02XA55J";
 const hydrogenQueueChannel = "C02TXPC0TQS";
+const genQueueChannel = "C02RT1MT4S0"
 let tempQueue = [];
+let tempGenQueue = []
+
 const qCardModal = async (data, res) => {
   originalReq = data;
 
@@ -189,7 +192,7 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
-
+ 
     let studentQCard = await client.chat.postMessage({
       channel: originalReq.body.channel_id,
       attachments: [
@@ -210,7 +213,7 @@ const postQ = async (req, res, payload) => {
               name: "resolved",
               text: "Resolved",
               type: "button",
-              value: req.body.channel_id,
+              value: req.body.channel_name,
             },
           ],
         },
@@ -233,9 +236,9 @@ const postQ = async (req, res, payload) => {
     let studentName = req.body.channel_name.split("_");
 
     //General queue
-    await client.chat.postMessage({
+    let genQueue = await client.chat.postMessage({
       response_type: "status",
-      channel: "C02RT1MT4S0",
+      channel: genQueueChannel,
       text: req.body.channel_name,
       attachments: [
         {
@@ -251,6 +254,12 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
+    tempGenQueue.push({
+      name:genQueue.message.text,
+      channel:genQueue.channel,
+      ts: genQueue.ts
+    })
+
     if (studentName[1] === "hydrogen") {
       let hydro = await client.chat.postMessage({
         response_type: "status",
@@ -321,6 +330,30 @@ const removeFromQueue = async (data) => {
   console.log(tempQueue);
 };
 
+
+const markAsComplete = async (data) =>{
+  console.log("Mark as complete",data)
+  let cardTocomplete = tempGenQueue.filter((e)=>{
+    if (e.name === data){
+      return true
+    }else{
+      return false
+    }
+  })
+  try{
+    await client.reactions.add({
+      response_type:'status',
+      channel: cardTocomplete[0].channel,
+      name:"white_check_mark",
+      timestamp:cardTocomplete[0].ts
+    })
+    return res.status(200).send("");
+  }catch{
+    console.log('')
+  }
+}
+
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;
+exports.markAsComplete = markAsComplete;
