@@ -332,7 +332,6 @@ const removeFromQueue = async (data) => {
 
 
 const markAsComplete = async (data) =>{
-  console.log("Mark as complete",data)
   let cardTocomplete = tempGenQueue.filter((e)=>{
     if (e.name === data){
       return true
@@ -347,10 +346,34 @@ const markAsComplete = async (data) =>{
       name:"white_check_mark",
       timestamp:cardTocomplete[0].ts
     })
+    await client.chat.postMessage({
+      // The token you used to initialize your app
+      response_type:"status",
+      channel: cardTocomplete[0].channel,
+      thread_ts: cardTocomplete[0].ts,
+      text: "Resolved in student channel"
+      // You could also use a blocks[] array to send richer content
+    })
     return res.status(200).send("");
   }catch{
     console.log('')
   }
+  const removeFromGenQueue = tempGenQueue.find((e)=>e.name === data)
+  tempGenQueue.splice(removeFromGenQueue,1)
+
+  // try{
+  //   const result = await app.client.chat.postMessage({
+  //     // The token you used to initialize your app
+  //     response_type:"status",
+  //     channel: cardTocomplete[0].channel,
+  //     thread_ts: cardTocomplete[0].ts,
+  //     text: "Resolved in student channel"
+  //     // You could also use a blocks[] array to send richer content
+  //   })
+  //   return res.status(200).send("");
+  // }catch{
+  //   console.log('')
+  // }
 }
 
 exports.removeFromQueue = removeFromQueue;
