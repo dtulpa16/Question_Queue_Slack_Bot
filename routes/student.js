@@ -34,6 +34,7 @@ router.post("/notify", async (req, res) => {
       return res.status(200).send("");
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
+        try{
         await client.chat.postMessage({
           response_type: "status",
           channel: "C02S3U4NPFT",
@@ -44,6 +45,11 @@ router.post("/notify", async (req, res) => {
           name:"heavy_check_mark",
           timestamp:payload.message_ts
         })
+        return res.status(200).send("");
+        }catch{
+          console.log(error)
+        }
+
       } else if (payload.actions[0].name === "slack") {
         try{
         await client.chat.postMessage({
@@ -60,22 +66,7 @@ router.post("/notify", async (req, res) => {
         }catch{
           console.log(error)
         }
-      } else if (payload.actions[0].name === "complete") {
-        const messageId = payload.original_message.ts;
-  
-        const channelId = payload.channel.id;
-        try {
-          // Call the chat.delete method using the WebClient
-          const result = await client.chat.delete({
-            channel: channelId,
-            ts: messageId,
-          });
-          removeFromQueue(payload.original_message.text)
-          console.log("");
-        } catch (error) {
-          console.error(error);
-        }
-      }
+      } 
       else if (payload.actions[0].name === "resolved"){
         await client.reactions.add({
           channel: payload.channel.id,
@@ -83,6 +74,25 @@ router.post("/notify", async (req, res) => {
           timestamp:payload.message_ts
         })
      
+      }
+    }
+    else if (payload.type === "block_actions") {
+      const messageId = payload.message.ts;
+
+      const channelId = payload.channel.id;
+
+      console.log('ts: ', messageId)
+      console.log('channel: ', channelId)
+      try {
+        // Call the chat.delete method using the WebClient
+        const result = await client.chat.delete({
+          channel: channelId,
+          ts: messageId,
+        });
+        removeFromQueue(payload.message.text)
+        console.log("");
+      } catch (error) {
+        console.error(error);
       }
     }
 
