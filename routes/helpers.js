@@ -45,7 +45,7 @@ const qCardModal = async (data, res) => {
             element: {
               type: "plain_text_input",
               action_id: "my_action",
-              min_length:50,
+              min_length: 50,
             },
             label: {
               type: "plain_text",
@@ -59,7 +59,7 @@ const qCardModal = async (data, res) => {
             element: {
               type: "plain_text_input",
               action_id: "my_action",
-              min_length:50,
+              min_length: 50,
             },
             label: {
               type: "plain_text",
@@ -74,7 +74,7 @@ const qCardModal = async (data, res) => {
               type: "plain_text_input",
               multiline: true,
               action_id: "my_action",
-              min_length:50,
+              min_length: 50,
             },
             label: {
               type: "plain_text",
@@ -89,7 +89,7 @@ const qCardModal = async (data, res) => {
               type: "plain_text_input",
               multiline: true,
               action_id: "my_action",
-              min_length:10,
+              min_length: 2,
             },
             label: {
               type: "plain_text",
@@ -120,6 +120,42 @@ const postQ = async (req, res, payload) => {
       channel: channelId,
 
       text: req.body.channel_name,
+      blocks: [
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              text: {
+                type: "plain_text",
+                emoji: true,
+                text: "Complete",
+              },
+              confirm: {
+                title: {
+                  type: "plain_text",
+                  text: "Are you sure?",
+                },
+                text: {
+                  type: "mrkdwn",
+                  text: "Please confirm the question card has been resolved",
+                },
+                confirm: {
+                  type: "plain_text",
+                  text: "Confirm",
+                  
+                },
+                deny: {
+                  type: "plain_text",
+                  text: "Cancel",
+                },
+              },
+              style: "primary",
+              value: req.body.channel_id,
+            },
+          ],
+        },
+      ],
       attachments: [
         {
           text: "Queued by: " + req.body.user_name,
@@ -148,13 +184,6 @@ const postQ = async (req, res, payload) => {
               text: "In on Zoom",
               type: "button",
               value: req.body.channel_id,
-            },
-            {
-              name: "complete",
-              text: "Completed",
-              style: "primary",
-              type: "button",
-              value: "complete",
             },
           ],
         },
@@ -282,7 +311,7 @@ const removeFromQueue = async (data) => {
     }
   });
   await client.chat.delete({
-    response_type:'status',
+    response_type: "status",
     channel: studentToDelete[0].channel,
     ts: studentToDelete[0].ts,
   });
@@ -290,7 +319,6 @@ const removeFromQueue = async (data) => {
   const removeStudent = tempQueue.findIndex((e) => e.name === data);
   tempQueue.splice(removeStudent, 1);
   console.log(tempQueue);
-  
 };
 
 exports.removeFromQueue = removeFromQueue;
