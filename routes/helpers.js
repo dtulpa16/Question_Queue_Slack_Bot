@@ -13,6 +13,7 @@ const hydrogenQueueChannel = "C02TXPC0TQS";
 const genQueueChannel = "C02RT1MT4S0"
 let tempQueue = [];
 let tempGenQueue = []
+let tempInstructotQueue = []
 
 const qCardModal = async (data, res) => {
   originalReq = data;
@@ -48,6 +49,7 @@ const qCardModal = async (data, res) => {
             element: {
               type: "plain_text_input",
               action_id: "my_action",
+              multiline: true,
               min_length: 50,
             },
             label: {
@@ -61,6 +63,7 @@ const qCardModal = async (data, res) => {
             block_id: "2",
             element: {
               type: "plain_text_input",
+              multiline: true,
               action_id: "my_action",
               min_length: 50,
             },
@@ -103,6 +106,7 @@ const qCardModal = async (data, res) => {
         ],
       },
     });
+    
     return res.status(200).send("");
   } catch (error) {
     console.error(error);
@@ -192,6 +196,8 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
+    console.log("Instructor Queue view: ",result)
+
  
     let studentQCard = await client.chat.postMessage({
       channel: originalReq.body.channel_id,
@@ -258,6 +264,11 @@ const postQ = async (req, res, payload) => {
       name:genQueue.message.text,
       channel:genQueue.channel,
       ts: genQueue.ts
+    })
+    tempInstructotQueue.push({
+      name:genQueue.message.text,
+      channel:genQueue.channel,
+      ts:genQueue.ts
     })
 
     if (studentName[1] === "hydrogen") {
@@ -331,7 +342,7 @@ const removeFromQueue = async (data) => {
 };
 
 
-const markAsComplete = async (data) =>{
+const studentComplete = async (data) =>{
   let cardTocomplete = tempGenQueue.filter((e)=>{
     if (e.name === data){
       return true
@@ -358,25 +369,47 @@ const markAsComplete = async (data) =>{
   }catch{
     console.log('')
   }
-  const removeFromGenQueue = tempGenQueue.find((e)=>e.name === data)
+  const removeFromGenQueue = tempGenQueue.findIndex((e)=>e.name === data)
   tempGenQueue.splice(removeFromGenQueue,1)
 
-  // try{
-  //   const result = await app.client.chat.postMessage({
-  //     // The token you used to initialize your app
-  //     response_type:"status",
-  //     channel: cardTocomplete[0].channel,
-  //     thread_ts: cardTocomplete[0].ts,
-  //     text: "Resolved in student channel"
-  //     // You could also use a blocks[] array to send richer content
-  //   })
-  //   return res.status(200).send("");
-  // }catch{
-  //   console.log('')
-  // }
+}
+
+const instructorComplete = async (data, resolver) =>{
+  console.log("DATA ",data)
+  console.log("INSTCOMPLETE: ", tempInstructotQueue)
+  let cardTocomplete = tempInstructotQueue.filter((e)=>{
+    if (e.name === data){
+      return true
+    }else{
+      return false
+    }
+  })
+  try{
+    await client.reactions.add({
+      response_type:'status',
+      channel: cardTocomplete[0].channel,
+      name:"ballot_box_with_check",
+      timestamp:cardTocomplete[0].ts
+    })
+    await client.chat.postMessage({
+      // The token you used to initialize your app
+      response_type:"status",
+      channel: cardTocomplete[0].channel,
+      thread_ts: cardTocomplete[0].ts,
+      text: `Resolved from instructor channel by ${resolver}`
+      // You could also use a blocks[] array to send richer content
+    })
+    return res.status(200).send("");
+  }catch{
+    console.log('')
+  }
+  const removeFromInstructorQueue = tempInstructotQueue.findIndex((e)=>e.name === data)
+  tempInstructotQueue.splice(removeFromInstructorQueue,1)
+
 }
 
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;
-exports.markAsComplete = markAsComplete;
+exports.studentComplete = studentComplete;
+exports.instructorComplete = instructorComplete;

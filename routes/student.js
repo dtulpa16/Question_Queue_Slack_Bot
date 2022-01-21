@@ -2,7 +2,7 @@ const Student = require("../models/student");
 const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
-const { qCardModal, postQ, removeFromQueue, markAsComplete } = require("./helpers");
+const { qCardModal, postQ, removeFromQueue, instructorComplete, studentComplete } = require("./helpers");
 const botToken = require("../keys/keys")
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
@@ -73,7 +73,7 @@ router.post("/notify", async (req, res) => {
           name:"white_check_mark",
           timestamp:payload.message_ts
         })
-        markAsComplete(payload.actions[0].value)
+        studentComplete(payload.actions[0].value)
      
       }
     }
@@ -90,7 +90,9 @@ router.post("/notify", async (req, res) => {
           channel: channelId,
           ts: messageId,
         });
+        instructorComplete(payload.message.text,payload.user.name)
         removeFromQueue(payload.message.text)
+        
         console.log("");
       } catch (error) {
         console.error(error);
