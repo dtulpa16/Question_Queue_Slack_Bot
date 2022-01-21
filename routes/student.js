@@ -2,7 +2,7 @@ const Student = require("../models/student");
 const express = require("express");
 const router = express.Router();
 const slackInteractiveMessages = require("@slack/interactive-messages");
-const { qCardModal, postQ, removeFromQueue } = require("./helpers");
+const { qCardModal, postQ, removeFromQueue, instructorComplete, studentComplete, completeStudentUpdates } = require("./helpers");
 const botToken = require("../keys/keys")
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(
@@ -35,11 +35,12 @@ router.post("/notify", async (req, res) => {
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
         try{
-        await client.chat.postMessage({
+        let updatePost = await client.chat.postMessage({
           response_type: "status",
           channel: "C02S3U4NPFT",
           text: payload.user.name + " // " + payload.original_message.text,
         });
+        completeStudentUpdates(updatePost)
         client.reactions.add({
           channel: payload.channel.id,
           name:"heavy_check_mark",
@@ -73,6 +74,7 @@ router.post("/notify", async (req, res) => {
           name:"white_check_mark",
           timestamp:payload.message_ts
         })
+        studentComplete(payload.actions[0].value)
      
       }
     }
@@ -89,7 +91,9 @@ router.post("/notify", async (req, res) => {
           channel: channelId,
           ts: messageId,
         });
+        instructorComplete(payload.message.text,payload.user.name)
         removeFromQueue(payload.message.text)
+        
         console.log("");
       } catch (error) {
         console.error(error);

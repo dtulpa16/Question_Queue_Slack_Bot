@@ -10,7 +10,12 @@ const client = new WebClient(botToken.botToken, {
 let originalReq = "";
 const oxygenQueueChannel = "C02U02XA55J";
 const hydrogenQueueChannel = "C02TXPC0TQS";
+const genQueueChannel = "C02RT1MT4S0"
 let tempQueue = [];
+let tempGenQueue = []
+let tempInstructotQueue = []
+let tempStudentUpdates = []
+
 const qCardModal = async (data, res) => {
   originalReq = data;
 
@@ -45,6 +50,7 @@ const qCardModal = async (data, res) => {
             element: {
               type: "plain_text_input",
               action_id: "my_action",
+              multiline: true,
               min_length: 50,
             },
             label: {
@@ -58,6 +64,7 @@ const qCardModal = async (data, res) => {
             block_id: "2",
             element: {
               type: "plain_text_input",
+              multiline: true,
               action_id: "my_action",
               min_length: 50,
             },
@@ -100,6 +107,7 @@ const qCardModal = async (data, res) => {
         ],
       },
     });
+    
     return res.status(200).send("");
   } catch (error) {
     console.error(error);
@@ -158,10 +166,7 @@ const postQ = async (req, res, payload) => {
       ],
       attachments: [
         {
-          text: "Queued by: " + req.body.user_name,
-        },
-        {
-          text: `Q Card:
+          text: `*${req.body.channel_name}*:
           What is the task you are trying to accomplish? What is the goal? \n
           *${payload.view.state.values[1].my_action.value}* \n
           What do you think the problem or impediment is? \n
@@ -189,7 +194,9 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
+    console.log("Instructor Queue view: ",result)
 
+ 
     let studentQCard = await client.chat.postMessage({
       channel: originalReq.body.channel_id,
       attachments: [
@@ -210,7 +217,7 @@ const postQ = async (req, res, payload) => {
               name: "resolved",
               text: "Resolved",
               type: "button",
-              value: req.body.channel_id,
+              value: req.body.channel_name,
             },
           ],
         },
@@ -233,9 +240,9 @@ const postQ = async (req, res, payload) => {
     let studentName = req.body.channel_name.split("_");
 
     //General queue
-    await client.chat.postMessage({
+    let genQueue = await client.chat.postMessage({
       response_type: "status",
-      channel: "C02RT1MT4S0",
+      channel: genQueueChannel,
       text: req.body.channel_name,
       attachments: [
         {
@@ -251,6 +258,17 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
+    tempGenQueue.push({
+      name:genQueue.message.text,
+      channel:genQueue.channel,
+      ts: genQueue.ts
+    })
+    tempInstructotQueue.push({
+      name:genQueue.message.text,
+      channel:genQueue.channel,
+      ts:genQueue.ts
+    })
+
     if (studentName[1] === "hydrogen") {
       let hydro = await client.chat.postMessage({
         response_type: "status",
@@ -303,6 +321,16 @@ const postQ = async (req, res, payload) => {
   }
 };
 
+const completeStudentUpdates = async (data)=>{
+  let name = data.message.text.split(" // ");
+  tempStudentUpdates.push({
+    name:name[1],
+    ts:data.ts,
+    channel:data.channel
+  })
+  
+}
+
 const removeFromQueue = async (data) => {
   console.log(data);
   let studentToDelete = tempQueue.filter((e) => {
@@ -321,6 +349,96 @@ const removeFromQueue = async (data) => {
   console.log(tempQueue);
 };
 
+
+const studentComplete = async (data) =>{
+  let cardTocomplete = tempGenQueue.filter((e)=>{
+    if (e.name === data){
+      return true
+    }else{
+      return false
+    }
+  })
+  try{
+    await client.reactions.add({
+      response_type:'status',
+      channel: cardTocomplete[0].channel,
+      name:"white_check_mark",
+      timestamp:cardTocomplete[0].ts
+    })
+    await client.chat.postMessage({
+      // The token you used to initialize your app
+      response_type:"status",
+      channel: cardTocomplete[0].channel,
+      thread_ts: cardTocomplete[0].ts,
+      text: "Resolved in student channel"
+      // You could also use a blocks[] array to send richer content
+    })
+    return res.status(200).send("");
+  }catch{
+    console.log('')
+  }
+  const removeFromGenQueue = tempGenQueue.findIndex((e)=>e.name === data)
+  tempGenQueue.splice(removeFromGenQueue,1)
+
+}
+
+const instructorComplete = async (data, resolver) =>{
+
+  let cardTocomplete = tempInstructotQueue.filter((e)=>{
+    if (e.name === data){
+      return true
+    }else{
+      return false
+    }
+  })
+  try{
+    await client.reactions.add({
+      response_type:'status',
+      channel: cardTocomplete[0].channel,
+      name:"ballot_box_with_check",
+      timestamp:cardTocomplete[0].ts
+    })
+    await client.chat.postMessage({
+      // The token you used to initialize your app
+      response_type:"status",
+      channel: cardTocomplete[0].channel,
+      thread_ts: cardTocomplete[0].ts,
+      text: `Resolved from instructor channel by ${resolver}`
+      // You could also use a blocks[] array to send richer content
+    })
+    return res.status(200).send("");
+  }catch{
+    console.log('')
+  }
+  const removeFromInstructorQueue = tempInstructotQueue.findIndex((e)=>e.name === data)
+  tempInstructotQueue.splice(removeFromInstructorQueue,1)
+
+  let updateToUpdate = tempStudentUpdates.filter((e)=>{
+    if (e.name === data){
+      return true
+    }else{
+      return false
+    }
+  })
+  try{
+    await client.reactions.add({
+      response_type:'status',
+      channel: updateToUpdate[0].channel,
+      name:"back",
+      timestamp:updateToUpdate[0].ts
+    })
+    return res.status(200).send("");
+  }catch{
+    console.log('')
+  }
+  const outOfCall = tempStudentUpdates.findIndex((e)=>e.name === data)
+  tempStudentUpdates.splice(outOfCall,1)
+  
+}
+
+exports.completeStudentUpdates = completeStudentUpdates
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;
+exports.studentComplete = studentComplete;
+exports.instructorComplete = instructorComplete;
