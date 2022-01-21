@@ -14,6 +14,7 @@ const genQueueChannel = "C02RT1MT4S0"
 let tempQueue = [];
 let tempGenQueue = []
 let tempInstructotQueue = []
+let tempStudentUpdates = []
 
 const qCardModal = async (data, res) => {
   originalReq = data;
@@ -165,10 +166,7 @@ const postQ = async (req, res, payload) => {
       ],
       attachments: [
         {
-          text: "Queued by: " + req.body.user_name,
-        },
-        {
-          text: `Q Card:
+          text: `*${req.body.channel_name}*:
           What is the task you are trying to accomplish? What is the goal? \n
           *${payload.view.state.values[1].my_action.value}* \n
           What do you think the problem or impediment is? \n
@@ -323,6 +321,16 @@ const postQ = async (req, res, payload) => {
   }
 };
 
+const completeStudentUpdates = async (data)=>{
+  let name = data.message.text.split(" // ");
+  tempStudentUpdates.push({
+    name:name[1],
+    ts:data.ts,
+    channel:data.channel
+  })
+  
+}
+
 const removeFromQueue = async (data) => {
   console.log(data);
   let studentToDelete = tempQueue.filter((e) => {
@@ -375,8 +383,7 @@ const studentComplete = async (data) =>{
 }
 
 const instructorComplete = async (data, resolver) =>{
-  console.log("DATA ",data)
-  console.log("INSTCOMPLETE: ", tempInstructotQueue)
+
   let cardTocomplete = tempInstructotQueue.filter((e)=>{
     if (e.name === data){
       return true
@@ -406,8 +413,30 @@ const instructorComplete = async (data, resolver) =>{
   const removeFromInstructorQueue = tempInstructotQueue.findIndex((e)=>e.name === data)
   tempInstructotQueue.splice(removeFromInstructorQueue,1)
 
+  let updateToUpdate = tempStudentUpdates.filter((e)=>{
+    if (e.name === data){
+      return true
+    }else{
+      return false
+    }
+  })
+  try{
+    await client.reactions.add({
+      response_type:'status',
+      channel: updateToUpdate[0].channel,
+      name:"back",
+      timestamp:updateToUpdate[0].ts
+    })
+    return res.status(200).send("");
+  }catch{
+    console.log('')
+  }
+  const outOfCall = tempStudentUpdates.findIndex((e)=>e.name === data)
+  tempStudentUpdates.splice(outOfCall,1)
+  
 }
 
+exports.completeStudentUpdates = completeStudentUpdates
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;
