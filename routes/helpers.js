@@ -10,11 +10,11 @@ const client = new WebClient(botToken.botToken, {
 let originalReq = "";
 const oxygenQueueChannel = "C02U02XA55J";
 const hydrogenQueueChannel = "C02TXPC0TQS";
-const genQueueChannel = "C02RT1MT4S0"
+const genQueueChannel = "C02RT1MT4S0";
 let tempQueue = [];
-let tempGenQueue = []
-let tempInstructotQueue = []
-let tempStudentUpdates = []
+let tempGenQueue = [];
+let tempInstructotQueue = [];
+let tempStudentUpdates = [];
 
 const qCardModal = async (data, res) => {
   originalReq = data;
@@ -107,7 +107,7 @@ const qCardModal = async (data, res) => {
         ],
       },
     });
-    
+
     return res.status(200).send("");
   } catch (error) {
     console.error(error);
@@ -115,10 +115,51 @@ const qCardModal = async (data, res) => {
 };
 
 const postQ = async (req, res, payload) => {
-  let chosenFile =
-    screenshots.screenshots[
-      Math.floor(Math.random() * screenshots.screenshots.length)
-    ];
+  // let chosenFile =
+  //   screenshots.screenshots[
+  //     Math.floor(Math.random() * screenshots.screenshots.length)
+  //   ];
+  let studentName = req.body.channel_name.split("_");
+  let cohortStamp = "";
+  if (studentName[1] === "hydrogen") {
+    cohortStamp = ":hydrogen:";
+  } else if (studentName[1] === "oxygen") {
+    cohortStamp = ":oxygen:";
+  }
+
+  try {
+    let genQueue = await client.chat.postMessage({
+      response_type: "status",
+      channel: genQueueChannel,
+      text: req.body.channel_name,
+      attachments: [
+        {
+          text: `Q Card:
+          What is the task you are trying to accomplish? What is the goal? \n
+          *${payload.view.state.values[1].my_action.value}* \n
+          What do you think the problem or impediment is? \n
+          *${payload.view.state.values[2].my_action.value}*\n
+          What have you specifically tried in your code? \n
+          *${payload.view.state.values[3].my_action.value}*\n
+          What did you learn by dropping a breakpoint? \n
+          *${payload.view.state.values[4].my_action.value}*\n`,
+        },
+      ],
+    });
+    tempGenQueue.push({
+      name: genQueue.message.text,
+      channel: genQueue.channel,
+      ts: genQueue.ts,
+    });
+    tempInstructotQueue.push({
+      name: genQueue.message.text,
+      channel: genQueue.channel,
+      ts: genQueue.ts,
+    });
+    console.log(genQueue);
+  } catch (error) {
+    console.error(error);
+  }
 
   try {
     const channelId = "C02RM992Y1H";
@@ -127,7 +168,7 @@ const postQ = async (req, res, payload) => {
       response_type: "status",
       channel: channelId,
 
-      text: req.body.channel_name,
+      text: `${req.body.channel_name}`,
       blocks: [
         {
           type: "actions",
@@ -151,7 +192,6 @@ const postQ = async (req, res, payload) => {
                 confirm: {
                   type: "plain_text",
                   text: "Confirm",
-                  
                 },
                 deny: {
                   type: "plain_text",
@@ -166,7 +206,7 @@ const postQ = async (req, res, payload) => {
       ],
       attachments: [
         {
-          text: `*${req.body.channel_name}*:
+          text: `${cohortStamp} *${req.body.channel_name}* ${cohortStamp} :
           What is the task you are trying to accomplish? What is the goal? \n
           *${payload.view.state.values[1].my_action.value}* \n
           What do you think the problem or impediment is? \n
@@ -194,9 +234,11 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
-    console.log("Instructor Queue view: ",result)
-
- 
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
+  try {
     let studentQCard = await client.chat.postMessage({
       channel: originalReq.body.channel_id,
       attachments: [
@@ -236,42 +278,15 @@ const postQ = async (req, res, payload) => {
       //   },
       // ],
     });
+    console.log(studentQCard);
+  } catch (error) {
+    console.error(error);
+  }
 
-    let studentName = req.body.channel_name.split("_");
-
-    //General queue
-    let genQueue = await client.chat.postMessage({
-      response_type: "status",
-      channel: genQueueChannel,
-      text: req.body.channel_name,
-      attachments: [
-        {
-          text: `Q Card:
-          What is the task you are trying to accomplish? What is the goal? \n
-          *${payload.view.state.values[1].my_action.value}* \n
-          What do you think the problem or impediment is? \n
-          *${payload.view.state.values[2].my_action.value}*\n
-          What have you specifically tried in your code? \n
-          *${payload.view.state.values[3].my_action.value}*\n
-          What did you learn by dropping a breakpoint? \n
-          *${payload.view.state.values[4].my_action.value}*\n`,
-        },
-      ],
-    });
-    tempGenQueue.push({
-      name:genQueue.message.text,
-      channel:genQueue.channel,
-      ts: genQueue.ts
-    })
-    tempInstructotQueue.push({
-      name:genQueue.message.text,
-      channel:genQueue.channel,
-      ts:genQueue.ts
-    })
-
+  //General queue
+  try {
     if (studentName[1] === "hydrogen") {
       let hydro = await client.chat.postMessage({
-        response_type: "status",
         channel: hydrogenQueueChannel,
         text: req.body.channel_name,
         blocks: [
@@ -284,18 +299,14 @@ const postQ = async (req, res, payload) => {
           },
         ],
       });
-      console.log(hydro);
 
       tempQueue.push({
         name: hydro.message.text,
         channel: hydro.channel,
         ts: hydro.ts,
       });
-
-      console.log(tempQueue);
     } else if (studentName[1] === "oxygen") {
       let oxy = await client.chat.postMessage({
-        response_type: "status",
         channel: oxygenQueueChannel,
         text: req.body.channel_name,
         blocks: [
@@ -315,21 +326,20 @@ const postQ = async (req, res, payload) => {
       });
     }
 
-    return res.status(200).send("");
+    console.log("hi");
   } catch (error) {
     console.error(error);
   }
 };
 
-const completeStudentUpdates = async (data)=>{
+const completeStudentUpdates = async (data) => {
   let name = data.message.text.split(" // ");
   tempStudentUpdates.push({
-    name:name[1],
-    ts:data.ts,
-    channel:data.channel
-  })
-  
-}
+    name: name[1],
+    ts: data.ts,
+    channel: data.channel,
+  });
+};
 
 const removeFromQueue = async (data) => {
   console.log(data);
@@ -338,105 +348,105 @@ const removeFromQueue = async (data) => {
       return true;
     }
   });
-  await client.chat.delete({
-    response_type: "status",
-    channel: studentToDelete[0].channel,
-    ts: studentToDelete[0].ts,
-  });
+  try {
+    let deleteStudent = await client.chat.delete({
+      channel: studentToDelete[0].channel,
+      ts: studentToDelete[0].ts,
+    });
+    console.log(deleteStudent);
+  } catch (error) {
+    console.log(error);
+  }
 
   const removeStudent = tempQueue.findIndex((e) => e.name === data);
   tempQueue.splice(removeStudent, 1);
   console.log(tempQueue);
 };
 
-
-const studentComplete = async (data) =>{
-  let cardTocomplete = tempGenQueue.filter((e)=>{
-    if (e.name === data){
-      return true
-    }else{
-      return false
+const studentComplete = async (data) => {
+  let cardTocomplete = tempGenQueue.filter((e) => {
+    if (e.name === data) {
+      return true;
+    } else {
+      return false;
     }
-  })
-  try{
-    await client.reactions.add({
-      response_type:'status',
+  });
+  try {
+    client.reactions.add({
       channel: cardTocomplete[0].channel,
-      name:"white_check_mark",
-      timestamp:cardTocomplete[0].ts
-    })
-    await client.chat.postMessage({
+      name: "white_check_mark",
+      timestamp: cardTocomplete[0].ts,
+    });
+    let replyResolution = await client.chat.postMessage({
       // The token you used to initialize your app
-      response_type:"status",
+
       channel: cardTocomplete[0].channel,
       thread_ts: cardTocomplete[0].ts,
-      text: "Resolved in student channel"
+      text: "Resolved in student channel",
       // You could also use a blocks[] array to send richer content
-    })
-    return res.status(200).send("");
-  }catch{
-    console.log('')
+    });
+    console.log(replyResolution);
+  } catch (error){
+    console.log(error);
   }
-  const removeFromGenQueue = tempGenQueue.findIndex((e)=>e.name === data)
-  tempGenQueue.splice(removeFromGenQueue,1)
+  const removeFromGenQueue = tempGenQueue.findIndex((e) => e.name === data);
+  tempGenQueue.splice(removeFromGenQueue, 1);
+};
 
-}
-
-const instructorComplete = async (data, resolver) =>{
-
-  let cardTocomplete = tempInstructotQueue.filter((e)=>{
-    if (e.name === data){
-      return true
-    }else{
-      return false
+const instructorComplete = async (data, resolver) => {
+  let cardTocomplete = tempInstructotQueue.filter((e) => {
+    if (e.name === data) {
+      return true;
+    } else {
+      return false;
     }
-  })
-  try{
-    await client.reactions.add({
-      response_type:'status',
+  });
+  try {
+    client.reactions.add({
       channel: cardTocomplete[0].channel,
-      name:"ballot_box_with_check",
-      timestamp:cardTocomplete[0].ts
-    })
-    await client.chat.postMessage({
+      name: "ballot_box_with_check",
+      timestamp: cardTocomplete[0].ts,
+    });
+    let instructorResolution  = await client.chat.postMessage({
       // The token you used to initialize your app
-      response_type:"status",
+      response_type: "status",
       channel: cardTocomplete[0].channel,
       thread_ts: cardTocomplete[0].ts,
-      text: `Resolved from instructor channel by ${resolver}`
+      text: `Resolved from instructor channel by ${resolver}`,
       // You could also use a blocks[] array to send richer content
-    })
-    return res.status(200).send("");
-  }catch{
-    console.log('')
+    });
+    console.log(instructorResolution);
+  } catch (error){
+    console.log(error);
   }
-  const removeFromInstructorQueue = tempInstructotQueue.findIndex((e)=>e.name === data)
-  tempInstructotQueue.splice(removeFromInstructorQueue,1)
+  const removeFromInstructorQueue = tempInstructotQueue.findIndex(
+    (e) => e.name === data
+  );
+  tempInstructotQueue.splice(removeFromInstructorQueue, 1);
 
-  let updateToUpdate = tempStudentUpdates.filter((e)=>{
-    if (e.name === data){
-      return true
-    }else{
-      return false
+  let updateToUpdate = tempStudentUpdates.filter((e) => {
+    if (e.name === data) {
+      return true;
+    } else {
+      return false;
     }
-  })
-  try{
-    await client.reactions.add({
-      response_type:'status',
+  });
+  try {
+    let updateZoomStatus = await client.reactions.add({
+      response_type: "status",
       channel: updateToUpdate[0].channel,
-      name:"back",
-      timestamp:updateToUpdate[0].ts
-    })
-    return res.status(200).send("");
-  }catch{
-    console.log('')
+      name: "back",
+      timestamp: updateToUpdate[0].ts,
+    });
+    console.log(updateZoomStatus);
+  } catch (error) {
+    console.log(error);
   }
-  const outOfCall = tempStudentUpdates.findIndex((e)=>e.name === data)
-  tempStudentUpdates.splice(outOfCall,1)
-  
-}
+  const outOfCall = tempStudentUpdates.findIndex((e) => e.name === data);
+  tempStudentUpdates.splice(outOfCall, 1);
+};
 
-exports.completeStudentUpdates = completeStudentUpdates
+exports.completeStudentUpdates = completeStudentUpdates;
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;

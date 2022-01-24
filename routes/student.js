@@ -54,7 +54,6 @@ router.post("/notify", async (req, res) => {
       } else if (payload.actions[0].name === "slack") {
         try{
         await client.chat.postMessage({
-          response_type: "status",
           channel: payload.actions[0].value,
           text: "Taking a look! :eyes:",
         });
@@ -69,11 +68,16 @@ router.post("/notify", async (req, res) => {
         }
       } 
       else if (payload.actions[0].name === "resolved"){
-        await client.reactions.add({
+        try{
+          let studentCompletion = await client.reactions.add({
           channel: payload.channel.id,
           name:"white_check_mark",
           timestamp:payload.message_ts
         })
+        console.log(studentCompletion)
+      }catch(error){
+        console.log(error)
+      }
         studentComplete(payload.actions[0].value)
      
       }
@@ -94,7 +98,7 @@ router.post("/notify", async (req, res) => {
         instructorComplete(payload.message.text,payload.user.name)
         removeFromQueue(payload.message.text)
         
-        console.log("");
+        console.log(result);
       } catch (error) {
         console.error(error);
       }
