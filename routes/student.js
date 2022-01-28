@@ -96,7 +96,7 @@ router.post("/notify", async (req, res) => {
           ts: messageId,
         });
         instructorComplete(payload.message.text,payload.user.name)
-        removeFromQueue(payload.message.text)
+        removeFromQueue(payload.message.text, {ts: payload.message.ts, user: payload.user.id })
         
         console.log(result);
       } catch (error) {
