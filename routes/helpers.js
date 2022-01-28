@@ -18,7 +18,7 @@ let tempInstructotQueue = [];
 let tempStudentUpdates = [];
 
 const qCardModal = async (data, res) => {
-  originalReq = data;
+  // originalReq = data;
 
   try {
     // Call the views.open method using the WebClient passed to listeners
@@ -246,7 +246,7 @@ const postQ = async (req, res, payload) => {
   }
   try {
     let studentQCard = await client.chat.postMessage({
-      channel: originalReq.body.channel_id,
+      channel: req.body.channel_id,
       attachments: [
         {
           text: `Q Card:
