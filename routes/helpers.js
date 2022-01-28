@@ -8,8 +8,9 @@ const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
 let originalReq = "";
-const oxygenQueueChannel = "C02U02XA55J";
-const hydrogenQueueChannel = "C02TXPC0TQS";
+const poloniumQueueChannel = "C02TXPC0TQS";
+const astitineQueueChannel = "C02U02XA55J";
+const bismuthQueueChannel = "C02V4U7CKJA";
 const genQueueChannel = "C02RT1MT4S0";
 let tempQueue = [];
 let tempGenQueue = [];
@@ -17,7 +18,7 @@ let tempInstructotQueue = [];
 let tempStudentUpdates = [];
 
 const qCardModal = async (data, res) => {
-  originalReq = data;
+  // originalReq = data;
 
   try {
     // Call the views.open method using the WebClient passed to listeners
@@ -121,10 +122,12 @@ const postQ = async (req, res, payload) => {
   //   ];
   let studentName = req.body.channel_name.split("_");
   let cohortStamp = "";
-  if (studentName[1] === "hydrogen") {
-    cohortStamp = ":hydrogen:";
-  } else if (studentName[1] === "oxygen") {
-    cohortStamp = ":oxygen:";
+  if (studentName[1] === "bismuth") {
+    cohortStamp = ":83-bi:";
+  } else if (studentName[1] === "polonium") {
+    cohortStamp = ":84-po:";
+  }else if (studentName[1] === "astitine") {
+    cohortStamp = ":85-at:";
   }
 
   try {
@@ -203,6 +206,9 @@ const postQ = async (req, res, payload) => {
             },
           ],
         },
+        {
+          type: "divider",
+        },
       ],
       attachments: [
         {
@@ -240,7 +246,7 @@ const postQ = async (req, res, payload) => {
   }
   try {
     let studentQCard = await client.chat.postMessage({
-      channel: originalReq.body.channel_id,
+      channel: req.body.channel_id,
       attachments: [
         {
           text: `Q Card:
@@ -285,9 +291,9 @@ const postQ = async (req, res, payload) => {
 
   //General queue
   try {
-    if (studentName[1] === "hydrogen") {
-      let hydro = await client.chat.postMessage({
-        channel: hydrogenQueueChannel,
+    if (studentName[1] === "astitine") {
+      let at = await client.chat.postMessage({
+        channel: astitineQueueChannel,
         text: req.body.channel_name,
         blocks: [
           {
@@ -301,13 +307,13 @@ const postQ = async (req, res, payload) => {
       });
 
       tempQueue.push({
-        name: hydro.message.text,
-        channel: hydro.channel,
-        ts: hydro.ts,
+        name: at.message.text,
+        channel: at.channel,
+        ts: at.ts,
       });
-    } else if (studentName[1] === "oxygen") {
-      let oxy = await client.chat.postMessage({
-        channel: oxygenQueueChannel,
+    } else if (studentName[1] === "polonium") {
+      let po = await client.chat.postMessage({
+        channel: poloniumQueueChannel,
         text: req.body.channel_name,
         blocks: [
           {
@@ -320,9 +326,28 @@ const postQ = async (req, res, payload) => {
         ],
       });
       tempQueue.push({
-        name: oxy.message.text,
-        channel: oxy.channel,
-        ts: oxy.ts,
+        name: po.message.text,
+        channel: po.channel,
+        ts: po.ts,
+      });
+    }else if (studentName[1] === "bismuth") {
+      let bi = await client.chat.postMessage({
+        channel: bismuthQueueChannel,
+        text: req.body.channel_name,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+      tempQueue.push({
+        name: bi.message.text,
+        channel: bi.channel,
+        ts: bi.ts,
       });
     }
 
@@ -341,8 +366,8 @@ const completeStudentUpdates = async (data) => {
   });
 };
 
-const removeFromQueue = async (data) => {
-  console.log(data);
+const removeFromQueue = async (data,messageData) => {
+  console.log("DATAAAA ",data);
   let studentToDelete = tempQueue.filter((e) => {
     if (e.name === data) {
       return true;
@@ -355,12 +380,26 @@ const removeFromQueue = async (data) => {
     });
     console.log(deleteStudent);
   } catch (error) {
-    console.log(error);
+    try{
+      console.log('USER', messageData.user)
+      let errorReply = await client.chat.postMessage({
+        // The token you used to initialize your app
+  
+        channel: messageData.user,
+        text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
+        // You could also use a blocks[] array to send richer content
+      });
+      console.log(errorReply)
+    }catch(error){
+      console.log(error)
+    }
   }
-
+  try{
   const removeStudent = tempQueue.findIndex((e) => e.name === data);
   tempQueue.splice(removeStudent, 1);
-  console.log(tempQueue);
+  }catch(error){
+    console.log(error)
+  }
 };
 
 const studentComplete = async (data) => {
@@ -386,7 +425,7 @@ const studentComplete = async (data) => {
       // You could also use a blocks[] array to send richer content
     });
     console.log(replyResolution);
-  } catch (error){
+  } catch (error) {
     console.log(error);
   }
   const removeFromGenQueue = tempGenQueue.findIndex((e) => e.name === data);
@@ -407,7 +446,7 @@ const instructorComplete = async (data, resolver) => {
       name: "ballot_box_with_check",
       timestamp: cardTocomplete[0].ts,
     });
-    let instructorResolution  = await client.chat.postMessage({
+    let instructorResolution = await client.chat.postMessage({
       // The token you used to initialize your app
       response_type: "status",
       channel: cardTocomplete[0].channel,
@@ -416,7 +455,7 @@ const instructorComplete = async (data, resolver) => {
       // You could also use a blocks[] array to send richer content
     });
     console.log(instructorResolution);
-  } catch (error){
+  } catch (error) {
     console.log(error);
   }
   const removeFromInstructorQueue = tempInstructotQueue.findIndex(
