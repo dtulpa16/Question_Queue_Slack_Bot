@@ -19,6 +19,7 @@ let tempQueue = []
 router.post("/", async (req, res) => {
   reqData = req;
   resData = res;
+  console.log('OG Req: ', req.body)
   qCardModal(req, res);
 });
 
@@ -30,7 +31,10 @@ router.post("/notify", async (req, res) => {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
     if (payload.type === "view_submission") {
-      postQ(reqData, res, payload);
+      let channelData = payload.view.blocks[4].elements[0].text.split(' ')
+      let postChan = {id: channelData[1], chanName: channelData[0]}
+
+      postQ(postChan, res, payload);
       return res.status(200).send("");
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {

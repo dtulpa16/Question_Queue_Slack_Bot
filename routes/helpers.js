@@ -28,15 +28,18 @@ const qCardModal = async (data, res) => {
       response_action: "clear",
       view: {
         type: "modal",
+
         callback_id: "gratitude-modal",
         title: {
           type: "plain_text",
           text: "Question Card",
+
           emoji: true,
         },
         submit: {
           type: "plain_text",
           text: "Submit",
+
           emoji: true,
         },
         close: {
@@ -47,15 +50,18 @@ const qCardModal = async (data, res) => {
         blocks: [
           {
             type: "input",
+
             block_id: "1",
             element: {
               type: "plain_text_input",
               action_id: "my_action",
               multiline: true,
+
               min_length: 50,
             },
             label: {
               type: "plain_text",
+
               text: "What is the task you are trying to accomplish? What is the goal?",
               emoji: true,
             },
@@ -105,6 +111,16 @@ const qCardModal = async (data, res) => {
               emoji: true,
             },
           },
+          {
+            type: "context",
+            elements: [
+              {
+                type: "mrkdwn",
+                
+                text: data.body.channel_name  + ' ' + data.body.channel_id ,
+              },
+            ],
+          },
         ],
       },
     });
@@ -120,13 +136,13 @@ const postQ = async (req, res, payload) => {
   //   screenshots.screenshots[
   //     Math.floor(Math.random() * screenshots.screenshots.length)
   //   ];
-  let studentName = req.body.channel_name.split("_");
+  let studentName = req.chanName.split("_");
   let cohortStamp = "";
   if (studentName[1] === "bismuth") {
     cohortStamp = ":83-bi:";
   } else if (studentName[1] === "polonium") {
     cohortStamp = ":84-po:";
-  }else if (studentName[1] === "astitine") {
+  } else if (studentName[1] === "astitine") {
     cohortStamp = ":85-at:";
   }
 
@@ -134,7 +150,7 @@ const postQ = async (req, res, payload) => {
     let genQueue = await client.chat.postMessage({
       response_type: "status",
       channel: genQueueChannel,
-      text: req.body.channel_name,
+      text: req.chanName,
       attachments: [
         {
           text: `Q Card:
@@ -171,7 +187,7 @@ const postQ = async (req, res, payload) => {
       response_type: "status",
       channel: channelId,
 
-      text: `${req.body.channel_name}`,
+      text: `${req.chanName}`,
       blocks: [
         {
           type: "actions",
@@ -202,7 +218,7 @@ const postQ = async (req, res, payload) => {
                 },
               },
               style: "primary",
-              value: req.body.channel_id,
+              value: req.id,
             },
           ],
         },
@@ -212,7 +228,7 @@ const postQ = async (req, res, payload) => {
       ],
       attachments: [
         {
-          text: `${cohortStamp} *${req.body.channel_name}* ${cohortStamp} :
+          text: `${cohortStamp} *${req.chanName}* ${cohortStamp} :
           What is the task you are trying to accomplish? What is the goal? \n
           *${payload.view.state.values[1].my_action.value}* \n
           What do you think the problem or impediment is? \n
@@ -228,13 +244,13 @@ const postQ = async (req, res, payload) => {
               name: "slack",
               text: "In on Slack",
               type: "button",
-              value: req.body.channel_id,
+              value: req.id,
             },
             {
               name: "zoom",
               text: "In on Zoom",
               type: "button",
-              value: req.body.channel_id,
+              value: req.id,
             },
           ],
         },
@@ -246,7 +262,7 @@ const postQ = async (req, res, payload) => {
   }
   try {
     let studentQCard = await client.chat.postMessage({
-      channel: req.body.channel_id,
+      channel: req.id,
       attachments: [
         {
           text: `Q Card:
@@ -265,7 +281,7 @@ const postQ = async (req, res, payload) => {
               name: "resolved",
               text: "Resolved",
               type: "button",
-              value: req.body.channel_name,
+              value: req.chanName,
             },
           ],
         },
@@ -294,7 +310,7 @@ const postQ = async (req, res, payload) => {
     if (studentName[1] === "astitine") {
       let at = await client.chat.postMessage({
         channel: astitineQueueChannel,
-        text: req.body.channel_name,
+        text: req.chanName,
         blocks: [
           {
             type: "section",
@@ -314,7 +330,7 @@ const postQ = async (req, res, payload) => {
     } else if (studentName[1] === "polonium") {
       let po = await client.chat.postMessage({
         channel: poloniumQueueChannel,
-        text: req.body.channel_name,
+        text: req.chanName,
         blocks: [
           {
             type: "section",
@@ -330,10 +346,10 @@ const postQ = async (req, res, payload) => {
         channel: po.channel,
         ts: po.ts,
       });
-    }else if (studentName[1] === "bismuth") {
+    } else if (studentName[1] === "bismuth") {
       let bi = await client.chat.postMessage({
         channel: bismuthQueueChannel,
-        text: req.body.channel_name,
+        text: req.chanName,
         blocks: [
           {
             type: "section",
@@ -366,8 +382,8 @@ const completeStudentUpdates = async (data) => {
   });
 };
 
-const removeFromQueue = async (data,messageData) => {
-  console.log("DATAAAA ",data);
+const removeFromQueue = async (data, messageData) => {
+  console.log("DATAAAA ", data);
   let studentToDelete = tempQueue.filter((e) => {
     if (e.name === data) {
       return true;
@@ -380,25 +396,25 @@ const removeFromQueue = async (data,messageData) => {
     });
     console.log(deleteStudent);
   } catch (error) {
-    try{
-      console.log('USER', messageData.user)
+    try {
+      console.log("USER", messageData.user);
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-  
+
         channel: messageData.user,
         text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
         // You could also use a blocks[] array to send richer content
       });
-      console.log(errorReply)
-    }catch(error){
-      console.log(error)
+      console.log(errorReply);
+    } catch (error) {
+      console.log(error);
     }
   }
-  try{
-  const removeStudent = tempQueue.findIndex((e) => e.name === data);
-  tempQueue.splice(removeStudent, 1);
-  }catch(error){
-    console.log(error)
+  try {
+    const removeStudent = tempQueue.findIndex((e) => e.name === data);
+    tempQueue.splice(removeStudent, 1);
+  } catch (error) {
+    console.log(error);
   }
 };
 
