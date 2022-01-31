@@ -45,29 +45,28 @@ router.post("/notify", async (req, res) => {
           text: payload.user.name + " // " + payload.original_message.text,
         });
         completeStudentUpdates(updatePost)
-        client.reactions.add({
+        await client.reactions.add({
           channel: payload.channel.id,
           name:"heavy_check_mark",
           timestamp:payload.message_ts
         })
         return res.status(200).send("");
-        }catch{
+        }catch(error){
           console.log(error)
         }
-
       } else if (payload.actions[0].name === "slack") {
         try{
-        await client.chat.postMessage({
+        let inOnSlack = await client.chat.postMessage({
           channel: payload.actions[0].value,
           text: "Taking a look! :eyes:",
         });
-        client.reactions.add({
+        await client.reactions.add({
           channel: payload.channel.id,
           name:"eyes",
           timestamp:payload.message_ts
         })
         return res.status(200).send("");
-        }catch{
+        }catch(error){
           console.log(error)
         }
       } 

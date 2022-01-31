@@ -266,14 +266,14 @@ const postQ = async (req, res, payload) => {
       attachments: [
         {
           text: `Q Card:
-          What is the task you are trying to accomplish? What is the goal? \n
-          *${payload.view.state.values[1].my_action.value}* \n
-          What do you think the problem or impediment is? \n
-          *${payload.view.state.values[2].my_action.value}*\n
+          What is the task you are trying to accomplish? What is the goal?\n
+          *${payload.view.state.values[1].my_action.value}*
+          What do you think the problem or impediment is?\n
+          *${payload.view.state.values[2].my_action.value}*
           What have you specifically tried in your code? \n
-          *${payload.view.state.values[3].my_action.value}*\n
+          *${payload.view.state.values[3].my_action.value}*
           What did you learn by dropping a breakpoint? \n
-          *${payload.view.state.values[4].my_action.value}*\n`,
+          *${payload.view.state.values[4].my_action.value}*`,
           callback_id: "ping:instructor",
           color: "#3AA3E3",
           actions: [
@@ -397,11 +397,10 @@ const removeFromQueue = async (data, messageData) => {
     console.log(deleteStudent);
   } catch (error) {
     try {
-      console.log("USER", messageData.user);
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-
-        channel: messageData.user,
+        //TODO: Change to personal ID
+        channel: U02RCA272EA,
         text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
         // You could also use a blocks[] array to send richer content
       });
@@ -427,11 +426,6 @@ const studentComplete = async (data) => {
     }
   });
   try {
-    client.reactions.add({
-      channel: cardTocomplete[0].channel,
-      name: "white_check_mark",
-      timestamp: cardTocomplete[0].ts,
-    });
     let replyResolution = await client.chat.postMessage({
       // The token you used to initialize your app
 
@@ -440,9 +434,26 @@ const studentComplete = async (data) => {
       text: "Resolved in student channel",
       // You could also use a blocks[] array to send richer content
     });
+    await client.reactions.add({
+      channel: cardTocomplete[0].channel,
+      name: "white_check_mark",
+      timestamp: cardTocomplete[0].ts,
+    });
     console.log(replyResolution);
   } catch (error) {
     console.log(error);
+    try {
+      let errorReply = await client.chat.postMessage({
+        // The token you used to initialize your app
+        //TODO: Change to personal ID
+        channel: U02RCA272EA,
+        text: `An error occurred. A Q card was marked as "complete" by student: ${cardTocomplete[0].name}. Check there channel + Gen Queue to ensure no error`,
+        // You could also use a blocks[] array to send richer content
+      });
+      console.log(errorReply);
+    } catch (error) {
+      console.log(error);
+    }
   }
   const removeFromGenQueue = tempGenQueue.findIndex((e) => e.name === data);
   tempGenQueue.splice(removeFromGenQueue, 1);
@@ -470,9 +481,22 @@ const instructorComplete = async (data, resolver) => {
       text: `Resolved from instructor channel by ${resolver}`,
       // You could also use a blocks[] array to send richer content
     });
-    console.log(instructorResolution);
+    console.log(instructorResolution)
+    return res.status(200).send("");
   } catch (error) {
     console.log(error);
+    try { 
+      let errorReply = await client.chat.postMessage({
+        // The token you used to initialize your app
+        //TODO: Change to personal ID
+        channel: U02RCA272EA,
+        text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
+        // You could also use a blocks[] array to send richer content
+      });
+      console.log(errorReply);
+    } catch (error) {
+      console.log(error);
+    }
   }
   const removeFromInstructorQueue = tempInstructotQueue.findIndex(
     (e) => e.name === data
@@ -496,6 +520,18 @@ const instructorComplete = async (data, resolver) => {
     console.log(updateZoomStatus);
   } catch (error) {
     console.log(error);
+    try {
+      let errorReply = await client.chat.postMessage({
+        // The token you used to initialize your app
+        //TODO: Change to personal ID
+        channel: U02RCA272EA,
+        text: `An error occurred try to update zoom status in Student Updates channel. Please mark ${updateToUpdate[0].name} complete`,
+        // You could also use a blocks[] array to send richer content
+      });
+      console.log(errorReply);
+    } catch (error) {
+      console.log(error);
+    }
   }
   const outOfCall = tempStudentUpdates.findIndex((e) => e.name === data);
   tempStudentUpdates.splice(outOfCall, 1);
