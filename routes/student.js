@@ -39,9 +39,10 @@ router.post("/notify", async (req, res) => {
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
         try{
+          //TODO Student Updates Channel
         let updatePost = await client.chat.postMessage({
           response_type: "status",
-          channel: "C02S3U4NPFT",
+          channel: "C0314LFSMB4",
           text: payload.user.name + " // " + payload.original_message.text,
         });
         completeStudentUpdates(updatePost)
@@ -111,6 +112,21 @@ router.post("/notify", async (req, res) => {
   } catch (error) {
     console.error(error);
   }
+});
+
+router.get("/auth", async (req, res) => {
+    console.log(req)
+    try{
+      client.oauth.v2.access({
+      code: req.query.code,
+      client_id:botToken.clientId,
+      client_secret: botToken.client_secret
+    })
+    return res.status(200).send("")
+  }catch(error){
+    console.log(error)
+  }
+    
 });
 
 module.exports = router;

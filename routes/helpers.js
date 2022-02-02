@@ -8,10 +8,11 @@ const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
 let originalReq = "";
-const poloniumQueueChannel = "C02TXPC0TQS";
-const astitineQueueChannel = "C02U02XA55J";
-const bismuthQueueChannel = "C02V4U7CKJA";
-const genQueueChannel = "C02RT1MT4S0";
+const poloniumQueueChannel = "C0316V40MHA";
+const astitineQueueChannel = "C0314KUTMK4";
+const bismuthQueueChannel = "C030Q20U6MV";
+const genQueueChannel = "C0311NA00SH";
+const instructorQueue = "C0314K9LXQS"
 let tempQueue = [];
 let tempGenQueue = [];
 let tempInstructotQueue = [];
@@ -181,7 +182,7 @@ const postQ = async (req, res, payload) => {
   }
 
   try {
-    const channelId = "C02RM992Y1H";
+    const channelId = instructorQueue;
     // Call the chat.postMessage method using the WebClient
     const result = await client.chat.postMessage({
       response_type: "status",
@@ -383,7 +384,7 @@ const completeStudentUpdates = async (data) => {
 };
 
 const removeFromQueue = async (data, messageData) => {
-  console.log("DATAAAA ", data);
+
   let studentToDelete = tempQueue.filter((e) => {
     if (e.name === data) {
       return true;
@@ -399,8 +400,8 @@ const removeFromQueue = async (data, messageData) => {
     try {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
         // You could also use a blocks[] array to send richer content
       });
@@ -445,8 +446,8 @@ const studentComplete = async (data) => {
     try {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred. A Q card was marked as "complete" by student: ${cardTocomplete[0].name}. Check there channel + Gen Queue to ensure no error`,
         // You could also use a blocks[] array to send richer content
       });
@@ -488,8 +489,8 @@ const instructorComplete = async (data, resolver) => {
     try { 
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
         // You could also use a blocks[] array to send richer content
       });
@@ -523,8 +524,8 @@ const instructorComplete = async (data, resolver) => {
     try {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred try to update zoom status in Student Updates channel. Please mark ${updateToUpdate[0].name} complete`,
         // You could also use a blocks[] array to send richer content
       });
