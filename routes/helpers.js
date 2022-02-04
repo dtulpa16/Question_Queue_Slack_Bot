@@ -256,6 +256,12 @@ const postQ = async (req, res, payload) => {
               type: "button",
               value: req.id,
             },
+            {
+              name: "screenshot",
+              text: "Request Screenshots",
+              type: "button",
+              value: req.id,
+            },
           ],
         },
       ],
@@ -272,13 +278,13 @@ const postQ = async (req, res, payload) => {
         {
           text: `Q Card:
           What is the task you are trying to accomplish? What is the goal?
-          *${payload.view.state.values[1].my_action.value}*
+          ${payload.view.state.values[1].my_action.value}
           What do you think the problem or impediment is?
-          *${payload.view.state.values[2].my_action.value}*
+          ${payload.view.state.values[2].my_action.value}
           What have you specifically tried in your code? 
-          *${payload.view.state.values[3].my_action.value}*
+          ${payload.view.state.values[3].my_action.value}
           What did you learn by dropping a breakpoint? 
-          *${payload.view.state.values[4].my_action.value}*`,
+          ${payload.view.state.values[4].my_action.value}`,
           callback_id: "ping:instructor",
           color: "#3AA3E3",
           actions: [
@@ -445,12 +451,11 @@ const studentComplete = async (data) => {
   });
   try {
     let replyResolution = await client.chat.postMessage({
-      // The token you used to initialize your app
 
       channel: cardTocomplete[0].channel,
       thread_ts: cardTocomplete[0].ts,
       text: "Resolved in student channel",
-      // You could also use a blocks[] array to send richer content 
+
     });
     await client.reactions.add({
       channel: cardTocomplete[0].channel,
@@ -503,6 +508,7 @@ const instructorComplete = async (data, resolver) => {
     return res.status(200).send("");
   } catch (error) {
     console.log(error);
+    if(cardTocomplete.length > 0){
     try { 
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
@@ -515,7 +521,7 @@ const instructorComplete = async (data, resolver) => {
     } catch (error) {
       console.log(error);
     }
-  }
+  }}
   const removeFromInstructorQueue = tempInstructotQueue.findIndex(
     (e) => e.name === data
   );
@@ -542,7 +548,7 @@ const instructorComplete = async (data, resolver) => {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
         //TODO: Change to personal ID.
-        channel: U02JSDX1JBV,
+        channel: "U02JSDX1JBV",
         text: `An error occurred try to update zoom status in Student Updates channel. Please mark ${updateToUpdate[0].name} complete`,
         // You could also use a blocks[] array to send richer content
       });
