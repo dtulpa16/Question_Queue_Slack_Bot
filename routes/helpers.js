@@ -464,7 +464,7 @@ const studentComplete = async (data) => {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
         //TODO: Change to personal ID.
-        channel: U02JSDX1JBV,
+        channel: "U02JSDX1JBV",
         text: `An error occurred. A Q card was marked as "complete" by student: ${cardTocomplete[0].name}. Check there channel + Gen Queue to ensure no error`,
         // You could also use a blocks[] array to send richer content
       });
@@ -507,7 +507,7 @@ const instructorComplete = async (data, resolver) => {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
         //TODO: Change to personal ID.
-        channel: U02JSDX1JBV,
+        channel: "U02JSDX1JBV",
         text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
         // You could also use a blocks[] array to send richer content
       });
