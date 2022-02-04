@@ -309,6 +309,16 @@ const postQ = async (req, res, payload) => {
   } catch (error) {
     console.error(error);
   }
+  try{
+    let SSRequest = await client.chat.postMessage({
+    token:botToken.botToken,
+    channel: req.id,
+    text: "Screenshots Please :blobderpy:",
+  });
+  console.log(SSRequest)
+}catch(error){
+  console.log(error)
+}
 
   //General queue
   try {
