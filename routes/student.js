@@ -26,11 +26,22 @@ router.post("/", async (req, res) => {
 
 //Interaction handler
 
-router.post("/notify", async (req, res) => {
+
+router.post("/notify", async (req, res) => {  
+  
+
   try {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
     if (payload.type === "view_submission") {
+
+      // let updatePost = await client.chat.postMessage({
+      //   token:botToken.botToken,
+      //   channel: "C0315TKH370",
+      //   text: 'hi!'
+      // });
+
+      console.log("TEST SUBMIT",payload.view.blocks[4])
       let channelData = payload.view.blocks[4].elements[0].text.split(' ')
       let postChan = {id: channelData[1], chanName: channelData[0]}
 
@@ -39,12 +50,14 @@ router.post("/notify", async (req, res) => {
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
         try{
+          //TODO Student Updates Channel
         let updatePost = await client.chat.postMessage({
+          
           response_type: "status",
-          channel: "C02S3U4NPFT",
+          channel: "C0314LFSMB4",
           text: payload.user.name + " // " + payload.original_message.text,
         });
-        completeStudentUpdates(updatePost)
+        completeStudentUpdates(updatePost) 
         await client.reactions.add({
           channel: payload.channel.id,
           name:"heavy_check_mark",
@@ -113,4 +126,20 @@ router.post("/notify", async (req, res) => {
   }
 });
 
-module.exports = router;
+router.get("/auth", async (req, res) => {
+    console.log(req)
+    try{
+      let authTok = await client.oauth.v2.access({
+      code: req.query.code,
+      client_id:botToken.clientId,
+      client_secret: botToken.client_secret
+    })
+    botToken.botToken = authTok.authed_user.access_token
+    console.log(authTok)
+  }catch(error){
+    console.log(error)
+  }
+    
+});
+
+module.exports = router; 

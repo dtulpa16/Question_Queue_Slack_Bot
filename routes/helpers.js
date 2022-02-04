@@ -7,11 +7,13 @@ const botToken = require("../keys/keys");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
+
 let originalReq = "";
-const poloniumQueueChannel = "C02TXPC0TQS";
-const astitineQueueChannel = "C02U02XA55J";
-const bismuthQueueChannel = "C02V4U7CKJA";
-const genQueueChannel = "C02RT1MT4S0";
+const poloniumQueueChannel = "C0316V40MHA";
+const astatineQueueChannel = "C0314KUTMK4";
+const bismuthQueueChannel = "C030Q20U6MV";
+const genQueueChannel = "C0311NA00SH";
+const instructorQueue = "C0314K9LXQS"
 let tempQueue = [];
 let tempGenQueue = [];
 let tempInstructotQueue = [];
@@ -19,7 +21,7 @@ let tempStudentUpdates = [];
 
 const qCardModal = async (data, res) => {
   // originalReq = data;
-
+  console.log('')
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
@@ -142,26 +144,27 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":83-bi:";
   } else if (studentName[1] === "polonium") {
     cohortStamp = ":84-po:";
-  } else if (studentName[1] === "astitine") {
+  } else if (studentName[1] === "astatine") {
     cohortStamp = ":85-at:";
   }
 
   try {
     let genQueue = await client.chat.postMessage({
+      token:botToken.botToken,
       response_type: "status",
-      channel: genQueueChannel,
+      channel: "C0311NA00SH",
       text: req.chanName,
       attachments: [
         {
           text: `Q Card:
-          What is the task you are trying to accomplish? What is the goal? \n
-          *${payload.view.state.values[1].my_action.value}* \n
-          What do you think the problem or impediment is? \n
-          *${payload.view.state.values[2].my_action.value}*\n
-          What have you specifically tried in your code? \n
-          *${payload.view.state.values[3].my_action.value}*\n
-          What did you learn by dropping a breakpoint? \n
-          *${payload.view.state.values[4].my_action.value}*\n`,
+          What is the task you are trying to accomplish? What is the goal? 
+          *${payload.view.state.values[1].my_action.value}* 
+          What do you think the problem or impediment is? 
+          *${payload.view.state.values[2].my_action.value}*
+          What have you specifically tried in your code? 
+          *${payload.view.state.values[3].my_action.value}*
+          What did you learn by dropping a breakpoint? 
+          *${payload.view.state.values[4].my_action.value}*`,
         },
       ],
     });
@@ -181,11 +184,12 @@ const postQ = async (req, res, payload) => {
   }
 
   try {
-    const channelId = "C02RM992Y1H";
+    const channelId = instructorQueue;
     // Call the chat.postMessage method using the WebClient
     const result = await client.chat.postMessage({
+      token:botToken.botToken,
       response_type: "status",
-      channel: channelId,
+      channel: instructorQueue,
 
       text: `${req.chanName}`,
       blocks: [
@@ -261,18 +265,19 @@ const postQ = async (req, res, payload) => {
     console.error(error);
   }
   try {
-    let studentQCard = await client.chat.postMessage({
+    let studentQCard = await client.chat.postMessage({ 
+      token:botToken.botToken,
       channel: req.id,
       attachments: [
         {
           text: `Q Card:
-          What is the task you are trying to accomplish? What is the goal?\n
+          What is the task you are trying to accomplish? What is the goal?
           *${payload.view.state.values[1].my_action.value}*
-          What do you think the problem or impediment is?\n
+          What do you think the problem or impediment is?
           *${payload.view.state.values[2].my_action.value}*
-          What have you specifically tried in your code? \n
+          What have you specifically tried in your code? 
           *${payload.view.state.values[3].my_action.value}*
-          What did you learn by dropping a breakpoint? \n
+          What did you learn by dropping a breakpoint? 
           *${payload.view.state.values[4].my_action.value}*`,
           callback_id: "ping:instructor",
           color: "#3AA3E3",
@@ -307,9 +312,10 @@ const postQ = async (req, res, payload) => {
 
   //General queue
   try {
-    if (studentName[1] === "astitine") {
+    if (studentName[1] === "astatine") {
       let at = await client.chat.postMessage({
-        channel: astitineQueueChannel,
+        token:botToken.botToken,
+        channel: "C0314KUTMK4",
         text: req.chanName,
         blocks: [
           {
@@ -329,7 +335,8 @@ const postQ = async (req, res, payload) => {
       });
     } else if (studentName[1] === "polonium") {
       let po = await client.chat.postMessage({
-        channel: poloniumQueueChannel,
+        token:botToken.botToken,
+        channel: "C0316V40MHA",
         text: req.chanName,
         blocks: [
           {
@@ -348,7 +355,8 @@ const postQ = async (req, res, payload) => {
       });
     } else if (studentName[1] === "bismuth") {
       let bi = await client.chat.postMessage({
-        channel: bismuthQueueChannel,
+        token:botToken.botToken,
+        channel: "C030Q20U6MV",
         text: req.chanName,
         blocks: [
           {
@@ -383,7 +391,7 @@ const completeStudentUpdates = async (data) => {
 };
 
 const removeFromQueue = async (data, messageData) => {
-  console.log("DATAAAA ", data);
+
   let studentToDelete = tempQueue.filter((e) => {
     if (e.name === data) {
       return true;
@@ -399,8 +407,8 @@ const removeFromQueue = async (data, messageData) => {
     try {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: "U02JSDX1JBV",
         text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
         // You could also use a blocks[] array to send richer content
       });
@@ -432,7 +440,7 @@ const studentComplete = async (data) => {
       channel: cardTocomplete[0].channel,
       thread_ts: cardTocomplete[0].ts,
       text: "Resolved in student channel",
-      // You could also use a blocks[] array to send richer content
+      // You could also use a blocks[] array to send richer content 
     });
     await client.reactions.add({
       channel: cardTocomplete[0].channel,
@@ -445,8 +453,8 @@ const studentComplete = async (data) => {
     try {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred. A Q card was marked as "complete" by student: ${cardTocomplete[0].name}. Check there channel + Gen Queue to ensure no error`,
         // You could also use a blocks[] array to send richer content
       });
@@ -488,8 +496,8 @@ const instructorComplete = async (data, resolver) => {
     try { 
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
         // You could also use a blocks[] array to send richer content
       });
@@ -523,8 +531,8 @@ const instructorComplete = async (data, resolver) => {
     try {
       let errorReply = await client.chat.postMessage({
         // The token you used to initialize your app
-        //TODO: Change to personal ID
-        channel: U02RCA272EA,
+        //TODO: Change to personal ID.
+        channel: U02JSDX1JBV,
         text: `An error occurred try to update zoom status in Student Updates channel. Please mark ${updateToUpdate[0].name} complete`,
         // You could also use a blocks[] array to send richer content
       });
