@@ -194,6 +194,17 @@ const postQ = async (req, res, payload) => {
       text: `${req.chanName}`,
       blocks: [
         {
+          type: "divider",
+        },
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: `${cohortStamp}  ${req.chanName} ${cohortStamp}`,
+            emoji: true,
+          },
+        },
+        {
           type: "actions",
           elements: [
             {
@@ -226,21 +237,79 @@ const postQ = async (req, res, payload) => {
             },
           ],
         },
+        
         {
           type: "divider",
         },
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "What is the task you are trying to accomplish? What is the goal?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: payload.view.state.values[1].my_action.value,
+            emoji: true,
+          },
+        },
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "What do you think the problem or impediment is?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: `${payload.view.state.values[2].my_action.value}`,
+            emoji: true,
+          },
+        },
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "What have you specifically tried in your code?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: `${payload.view.state.values[3].my_action.value}`,
+            emoji: true,
+          },
+        },
+        {
+          type: "header",
+          text: {
+            type: "plain_text",
+            text: "What did you learn by dropping a breakpoint?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: `${payload.view.state.values[4].my_action.value}`,
+            emoji: true,
+          },
+        },
+      
       ],
       attachments: [
         {
-          text: `${cohortStamp} *${req.chanName}* ${cohortStamp} :
-          What is the task you are trying to accomplish? What is the goal? \n
-          *${payload.view.state.values[1].my_action.value}* \n
-          What do you think the problem or impediment is? \n
-          *${payload.view.state.values[2].my_action.value}*\n
-          What have you specifically tried in your code? \n
-          *${payload.view.state.values[3].my_action.value}*\n
-          What did you learn by dropping a breakpoint? \n
-          *${payload.view.state.values[4].my_action.value}*\n`,
+          text: " ",
           callback_id: "ping:instructor",
           color: "#3AA3E3",
           actions: [
@@ -343,32 +412,24 @@ const postQ = async (req, res, payload) => {
             },
             {
               type: "actions",
-        
+
               elements: [
                 {
                   type: "button",
-      
+
                   text: {
                     type: "plain_text",
                     text: "Resolved",
-             
+
                     emoji: true,
                   },
-               
+
                   value: req.chanName,
                   action_id: "resolved",
                 },
               ],
             },
           ],
-          // actions: [
-          //   {
-          //     name: "resolved",
-          //     text: "Resolved",
-          //     type: "button",
-          //     value: req.chanName,
-          //   },
-          // ],
         },
       ],
     });
@@ -482,11 +543,8 @@ const removeFromQueue = async (data, messageData) => {
   } catch (error) {
     try {
       let errorReply = await client.chat.postMessage({
-        // The token you used to initialize your app
-        //TODO: Change to personal ID.
         channel: "U02JSDX1JBV",
         text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
-        // You could also use a blocks[] array to send richer content
       });
       console.log(errorReply);
     } catch (error) {
@@ -525,11 +583,8 @@ const studentComplete = async (data) => {
     console.log(error);
     try {
       let errorReply = await client.chat.postMessage({
-        // The token you used to initialize your app
-        //TODO: Change to personal ID.
         channel: "U02JSDX1JBV",
         text: `An error occurred. A Q card was marked as "complete" by student: ${cardTocomplete[0].name}. Check there channel + Gen Queue to ensure no error`,
-        // You could also use a blocks[] array to send richer content
       });
       console.log(errorReply);
     } catch (error) {
@@ -569,11 +624,8 @@ const instructorComplete = async (data, resolver) => {
     if (cardTocomplete.length > 0) {
       try {
         let errorReply = await client.chat.postMessage({
-          // The token you used to initialize your app
-          //TODO: Change to personal ID.
           channel: "U02JSDX1JBV",
           text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
-          // You could also use a blocks[] array to send richer content
         });
         console.log(errorReply);
       } catch (error) {
@@ -605,11 +657,8 @@ const instructorComplete = async (data, resolver) => {
     console.log(error);
     try {
       let errorReply = await client.chat.postMessage({
-        // The token you used to initialize your app
-        //TODO: Change to personal ID.
         channel: "U02JSDX1JBV",
         text: `An error occurred try to update zoom status in Student Updates channel. Please mark ${updateToUpdate[0].name} complete`,
-        // You could also use a blocks[] array to send richer content
       });
       console.log(errorReply);
     } catch (error) {
