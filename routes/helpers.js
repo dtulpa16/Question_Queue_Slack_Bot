@@ -13,7 +13,7 @@ const poloniumQueueChannel = "C0316V40MHA";
 const astatineQueueChannel = "C0314KUTMK4";
 const bismuthQueueChannel = "C030Q20U6MV";
 const genQueueChannel = "C0311NA00SH";
-const instructorQueue = "C0314K9LXQS"
+const instructorQueue = "C0314K9LXQS";
 let tempQueue = [];
 let tempGenQueue = [];
 let tempInstructotQueue = [];
@@ -21,7 +21,7 @@ let tempStudentUpdates = [];
 
 const qCardModal = async (data, res) => {
   // originalReq = data;
-  console.log('')
+  console.log("");
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
@@ -118,8 +118,8 @@ const qCardModal = async (data, res) => {
             elements: [
               {
                 type: "mrkdwn",
-                
-                text: data.body.channel_name  + ' ' + data.body.channel_id ,
+
+                text: data.body.channel_name + " " + data.body.channel_id,
               },
             ],
           },
@@ -150,7 +150,7 @@ const postQ = async (req, res, payload) => {
 
   try {
     let genQueue = await client.chat.postMessage({
-      token:botToken.botToken,
+      token: botToken.botToken,
       response_type: "status",
       channel: "C0311NA00SH",
       text: req.chanName,
@@ -187,7 +187,7 @@ const postQ = async (req, res, payload) => {
     const channelId = instructorQueue;
     // Call the chat.postMessage method using the WebClient
     const result = await client.chat.postMessage({
-      token:botToken.botToken,
+      token: botToken.botToken,
       response_type: "status",
       channel: instructorQueue,
 
@@ -271,66 +271,127 @@ const postQ = async (req, res, payload) => {
     console.error(error);
   }
   try {
-    let studentQCard = await client.chat.postMessage({ 
-      token:botToken.botToken,
+    let studentQCard = await client.chat.postMessage({
+      token: botToken.botToken,
       channel: req.id,
       attachments: [
         {
-          text: `Q Card:
-          What is the task you are trying to accomplish? What is the goal?
-          ${payload.view.state.values[1].my_action.value}
-          What do you think the problem or impediment is?
-          ${payload.view.state.values[2].my_action.value}
-          What have you specifically tried in your code? 
-          ${payload.view.state.values[3].my_action.value}
-          What did you learn by dropping a breakpoint? 
-          ${payload.view.state.values[4].my_action.value}`,
-          callback_id: "ping:instructor",
-          color: "#3AA3E3",
-          actions: [
+          blocks: [
             {
-              name: "resolved",
-              text: "Resolved",
-              type: "button",
-              value: req.chanName,
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What is the task you are trying to accomplish? What is the goal?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: payload.view.state.values[1].my_action.value,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What do you think the problem or impediment is?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[2].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What have you specifically tried in your code?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[3].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What did you learn by dropping a breakpoint?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[4].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "actions",
+        
+              elements: [
+                {
+                  type: "button",
+      
+                  text: {
+                    type: "plain_text",
+                    text: "Resolved",
+             
+                    emoji: true,
+                  },
+               
+                  value: req.chanName,
+                  action_id: "resolved",
+                },
+              ],
             },
           ],
+          // actions: [
+          //   {
+          //     name: "resolved",
+          //     text: "Resolved",
+          //     type: "button",
+          //     value: req.chanName,
+          //   },
+          // ],
         },
       ],
-      // blocks: [
-      //   {
-      //     type: "image",
-      //     title: {
-      //       type: "plain_text",
-      //       text: "Screenshots please:)",
-      //       emoji: true,
-      //     },
-      //     image_url:
-      //       chosenFile,
-      //     alt_text: "screenshots please:)",
-      //   },
-      // ],
     });
     console.log(studentQCard);
   } catch (error) {
     console.error(error);
   }
-  try{
+  try {
     let SSRequest = await client.chat.postMessage({
-    token:botToken.botToken,
-    channel: req.id,
-    text: "Screenshots Please :blobderpy:",
-  });
-  console.log(SSRequest)
-}catch(error){
-  console.log(error)
-}
+      token: botToken.botToken,
+      channel: req.id,
+      text: "Screenshots Please :blobderpy:",
+    });
+    console.log(SSRequest);
+  } catch (error) {
+    console.log(error);
+  }
 
   //General queue
   try {
     if (studentName[1] === "astatine") {
       let at = await client.chat.postMessage({
-        token:botToken.botToken,
+        token: botToken.botToken,
         channel: "C0314KUTMK4",
         text: req.chanName,
         blocks: [
@@ -351,7 +412,7 @@ const postQ = async (req, res, payload) => {
       });
     } else if (studentName[1] === "polonium") {
       let po = await client.chat.postMessage({
-        token:botToken.botToken,
+        token: botToken.botToken,
         channel: "C0316V40MHA",
         text: req.chanName,
         blocks: [
@@ -371,7 +432,7 @@ const postQ = async (req, res, payload) => {
       });
     } else if (studentName[1] === "bismuth") {
       let bi = await client.chat.postMessage({
-        token:botToken.botToken,
+        token: botToken.botToken,
         channel: "C030Q20U6MV",
         text: req.chanName,
         blocks: [
@@ -407,7 +468,6 @@ const completeStudentUpdates = async (data) => {
 };
 
 const removeFromQueue = async (data, messageData) => {
-
   let studentToDelete = tempQueue.filter((e) => {
     if (e.name === data) {
       return true;
@@ -451,11 +511,9 @@ const studentComplete = async (data) => {
   });
   try {
     let replyResolution = await client.chat.postMessage({
-
       channel: cardTocomplete[0].channel,
       thread_ts: cardTocomplete[0].ts,
       text: "Resolved in student channel",
-
     });
     await client.reactions.add({
       channel: cardTocomplete[0].channel,
@@ -504,24 +562,25 @@ const instructorComplete = async (data, resolver) => {
       text: `Resolved from instructor channel by ${resolver}`,
       // You could also use a blocks[] array to send richer content
     });
-    console.log(instructorResolution)
+    console.log(instructorResolution);
     return res.status(200).send("");
   } catch (error) {
     console.log(error);
-    if(cardTocomplete.length > 0){
-    try { 
-      let errorReply = await client.chat.postMessage({
-        // The token you used to initialize your app
-        //TODO: Change to personal ID.
-        channel: "U02JSDX1JBV",
-        text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
-        // You could also use a blocks[] array to send richer content
-      });
-      console.log(errorReply);
-    } catch (error) {
-      console.log(error);
+    if (cardTocomplete.length > 0) {
+      try {
+        let errorReply = await client.chat.postMessage({
+          // The token you used to initialize your app
+          //TODO: Change to personal ID.
+          channel: "U02JSDX1JBV",
+          text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
+          // You could also use a blocks[] array to send richer content
+        });
+        console.log(errorReply);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }}
+  }
   const removeFromInstructorQueue = tempInstructotQueue.findIndex(
     (e) => e.name === data
   );
