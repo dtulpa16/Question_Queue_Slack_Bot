@@ -31,6 +31,10 @@ router.post("/", async (req, res) => {
 //Interaction handler
 
 router.post("/notify", async (req, res) => {
+  let chosenFile =
+    screenshots.screenshots[
+      Math.floor(Math.random() * screenshots.screenshots.length)
+    ];
   try {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
@@ -95,17 +99,13 @@ router.post("/notify", async (req, res) => {
             timestamp: payload.message_ts,
           });
           console.log(studentCompletion);
-          return res.status(200).send("")
+          return res.status(200).send("");
         } catch (error) {
           console.log(error);
         }
         studentComplete(payload.actions[0].value);
       } else if (payload.actions[0].name === "screenshot") {
         try {
-          let chosenFile =
-            screenshots.screenshots[
-              Math.floor(Math.random() * screenshots.screenshots.length)
-            ];
           let screenshotRequest = await client.chat.postMessage({
             channel: payload.actions[0].value,
             blocks: [
@@ -122,33 +122,45 @@ router.post("/notify", async (req, res) => {
             ],
           });
           console.log(screenshotRequest);
-          return res.status(200).send("")
+          return res.status(200).send("");
         } catch (error) {
           console.log(error);
         }
       }
     } else if (payload.type === "block_actions") {
-      const messageId = payload.message.ts;
+      if (payload.actions[0].action_id == "resolved") {
+        try {
+          studentComplete(payload.actions[0].value);
+          let studentCompletion = await client.reactions.add({
+            channel: payload.channel.id,
+            name: "white_check_mark",
+            timestamp: payload.message.ts,
+          });
 
-      const channelId = payload.channel.id;
-
-      console.log("ts: ", messageId);
-      console.log("channel: ", channelId);
-      try {
-        // Call the chat.delete method using the WebClient
-        const result = await client.chat.delete({
-          channel: channelId,
-          ts: messageId,
-        });
-        instructorComplete(payload.message.text, payload.user.name);
-        removeFromQueue(payload.message.text, {
-          ts: payload.message.ts,
-          user: payload.user.id,
-        });
-
-        console.log(result);
-      } catch (error) {
-        console.error(error);
+          return res.status(200).send("");
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        const messageId = payload.message.ts;
+        const channelId = payload.channel.id;
+        console.log("ts: ", messageId);
+        console.log("channel: ", channelId);
+        try {
+          // Call the chat.delete method using the WebClient
+          const result = await client.chat.delete({
+            channel: channelId,
+            ts: messageId,
+          });
+          instructorComplete(payload.message.text, payload.user.name);
+          removeFromQueue(payload.message.text, {
+            ts: payload.message.ts,
+            user: payload.user.id,
+          });
+          console.log(result);
+        } catch (error) {
+          console.error(error);
+        }
       }
     }
 
