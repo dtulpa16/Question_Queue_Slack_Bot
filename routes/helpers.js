@@ -151,20 +151,76 @@ const postQ = async (req, res, payload) => {
   try {
     let genQueue = await client.chat.postMessage({
       token: botToken.botToken,
-      response_type: "status",
       channel: "C0311NA00SH",
-      text: req.chanName,
+      text:req.chanName,
       attachments: [
         {
-          text: `Q Card:
-          What is the task you are trying to accomplish? What is the goal? 
-          *${payload.view.state.values[1].my_action.value}* 
-          What do you think the problem or impediment is? 
-          *${payload.view.state.values[2].my_action.value}*
-          What have you specifically tried in your code? 
-          *${payload.view.state.values[3].my_action.value}*
-          What did you learn by dropping a breakpoint? 
-          *${payload.view.state.values[4].my_action.value}*`,
+          blocks: [
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What is the task you are trying to accomplish? What is the goal?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: payload.view.state.values[1].my_action.value,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What do you think the problem or impediment is?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[2].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What have you specifically tried in your code?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[3].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What did you learn by dropping a breakpoint?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[4].my_action.value}`,
+                emoji: true,
+              },
+            },
+          ],
         },
       ],
     });
@@ -178,7 +234,7 @@ const postQ = async (req, res, payload) => {
       channel: genQueue.channel,
       ts: genQueue.ts,
     });
-    console.log(genQueue);
+    console.log('Gen queue', genQueue);
   } catch (error) {
     console.error(error);
   }
@@ -237,7 +293,7 @@ const postQ = async (req, res, payload) => {
             },
           ],
         },
-        
+
         {
           type: "divider",
         },
@@ -305,7 +361,6 @@ const postQ = async (req, res, payload) => {
             emoji: true,
           },
         },
-      
       ],
       attachments: [
         {
@@ -618,7 +673,6 @@ const instructorComplete = async (data, resolver) => {
       // You could also use a blocks[] array to send richer content
     });
     console.log(instructorResolution);
-    return res.status(200).send("");
   } catch (error) {
     console.log(error);
     if (cardTocomplete.length > 0) {
@@ -655,15 +709,6 @@ const instructorComplete = async (data, resolver) => {
     console.log(updateZoomStatus);
   } catch (error) {
     console.log(error);
-    try {
-      let errorReply = await client.chat.postMessage({
-        channel: "U02JSDX1JBV",
-        text: `An error occurred try to update zoom status in Student Updates channel. Please mark ${updateToUpdate[0].name} complete`,
-      });
-      console.log(errorReply);
-    } catch (error) {
-      console.log(error);
-    }
   }
   const outOfCall = tempStudentUpdates.findIndex((e) => e.name === data);
   tempStudentUpdates.splice(outOfCall, 1);

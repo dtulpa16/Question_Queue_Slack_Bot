@@ -31,6 +31,10 @@ router.post("/", async (req, res) => {
 //Interaction handler
 
 router.post("/notify", async (req, res) => {
+  let chosenFile =
+    screenshots.screenshots[
+      Math.floor(Math.random() * screenshots.screenshots.length)
+    ];
   try {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
@@ -102,10 +106,6 @@ router.post("/notify", async (req, res) => {
         studentComplete(payload.actions[0].value);
       } else if (payload.actions[0].name === "screenshot") {
         try {
-          let chosenFile =
-            screenshots.screenshots[
-              Math.floor(Math.random() * screenshots.screenshots.length)
-            ];
           let screenshotRequest = await client.chat.postMessage({
             channel: payload.actions[0].value,
             blocks: [
@@ -129,20 +129,18 @@ router.post("/notify", async (req, res) => {
       }
     } else if (payload.type === "block_actions") {
       if (payload.actions[0].action_id == "resolved") {
-        studentComplete(payload.actions[0].value);
         try {
-          
+          studentComplete(payload.actions[0].value);
           let studentCompletion = await client.reactions.add({
             channel: payload.channel.id,
             name: "white_check_mark",
             timestamp: payload.message.ts,
           });
-          
+
           return res.status(200).send("");
         } catch (error) {
           console.log(error);
         }
-        
       } else {
         const messageId = payload.message.ts;
         const channelId = payload.channel.id;
