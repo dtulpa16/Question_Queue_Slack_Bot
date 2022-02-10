@@ -24,8 +24,13 @@ let tempQueue = [];
 router.post("/", async (req, res) => {
   reqData = req;
   resData = res;
-  console.log("OG Req: ", req.body);
-  qCardModal(req, res);
+  console.log("Original Req: ", req.body);
+  if(req.body.text == 'showtime'){
+    screenshots.showTime(res)
+  }else{
+    qCardModal(req, res);
+  }
+  
 });
 
 //Interaction handler
