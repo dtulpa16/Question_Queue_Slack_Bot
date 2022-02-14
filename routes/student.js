@@ -112,6 +112,7 @@ router.post("/notify", async (req, res) => {
       } else if (payload.actions[0].name === "screenshot") {
         try {
           let screenshotRequest = await client.chat.postMessage({
+            response_type: "status",
             channel: payload.actions[0].value,
             blocks: [
               {
@@ -133,7 +134,10 @@ router.post("/notify", async (req, res) => {
         }
       }
     } else if (payload.type === "block_actions") {
-      if (payload.actions[0].action_id == "resolved") {
+      if (payload.actions[0].action_id == "jump2card") {
+        console.log(' ')
+      }
+      else if (payload.actions[0].action_id == "resolved") {
         try {
           studentComplete(payload.actions[0].value);
           let studentCompletion = await client.reactions.add({

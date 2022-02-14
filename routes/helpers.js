@@ -18,6 +18,7 @@ let tempQueue = [];
 let tempGenQueue = [];
 let tempInstructotQueue = [];
 let tempStudentUpdates = [];
+let studentQTS = "";
 
 const qCardModal = async (data, res) => {
   // originalReq = data;
@@ -134,10 +135,6 @@ const qCardModal = async (data, res) => {
 };
 
 const postQ = async (req, res, payload) => {
-  // let chosenFile =
-  //   screenshots.screenshots[
-  //     Math.floor(Math.random() * screenshots.screenshots.length)
-  //   ];
   let studentName = req.chanName.split("_");
   let cohortStamp = "";
   if (studentName[1] === "bismuth") {
@@ -148,252 +145,6 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":85-at:";
   }
 
-  try {
-    let genQueue = await client.chat.postMessage({
-      token: botToken.botToken,
-      channel: "C0311NA00SH",
-      text:req.chanName,
-      attachments: [
-        {
-          blocks: [
-            {
-              type: "header",
-              text: {
-                type: "plain_text",
-                text: "What is the task you are trying to accomplish? What is the goal?",
-                emoji: true,
-              },
-            },
-            {
-              type: "section",
-              text: {
-                type: "plain_text",
-                text: payload.view.state.values[1].my_action.value,
-                emoji: true,
-              },
-            },
-            {
-              type: "header",
-              text: {
-                type: "plain_text",
-                text: "What do you think the problem or impediment is?",
-                emoji: true,
-              },
-            },
-            {
-              type: "section",
-              text: {
-                type: "plain_text",
-                text: `${payload.view.state.values[2].my_action.value}`,
-                emoji: true,
-              },
-            },
-            {
-              type: "header",
-              text: {
-                type: "plain_text",
-                text: "What have you specifically tried in your code?",
-                emoji: true,
-              },
-            },
-            {
-              type: "section",
-              text: {
-                type: "plain_text",
-                text: `${payload.view.state.values[3].my_action.value}`,
-                emoji: true,
-              },
-            },
-            {
-              type: "header",
-              text: {
-                type: "plain_text",
-                text: "What did you learn by dropping a breakpoint?",
-                emoji: true,
-              },
-            },
-            {
-              type: "section",
-              text: {
-                type: "plain_text",
-                text: `${payload.view.state.values[4].my_action.value}`,
-                emoji: true,
-              },
-            },
-          ],
-        },
-      ],
-    });
-    tempGenQueue.push({
-      name: genQueue.message.text,
-      channel: genQueue.channel,
-      ts: genQueue.ts,
-    });
-    tempInstructotQueue.push({
-      name: genQueue.message.text,
-      channel: genQueue.channel,
-      ts: genQueue.ts,
-    });
-    console.log('Gen queue', genQueue);
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    const channelId = instructorQueue;
-    // Call the chat.postMessage method using the WebClient
-    const result = await client.chat.postMessage({
-      token: botToken.botToken,
-      response_type: "status",
-      channel: instructorQueue,
-
-      text: `${req.chanName}`,
-      blocks: [
-        {
-          type: "divider",
-        },
-        {
-          type: "header",
-          text: {
-            type: "plain_text",
-            text: `${cohortStamp}  ${req.chanName} ${cohortStamp}`,
-            emoji: true,
-          },
-        },
-        {
-          type: "actions",
-          elements: [
-            {
-              type: "button",
-              text: {
-                type: "plain_text",
-                emoji: true,
-                text: "Complete",
-              },
-              confirm: {
-                title: {
-                  type: "plain_text",
-                  text: "Are you sure?",
-                },
-                text: {
-                  type: "mrkdwn",
-                  text: "Please confirm the question card has been resolved",
-                },
-                confirm: {
-                  type: "plain_text",
-                  text: "Confirm",
-                },
-                deny: {
-                  type: "plain_text",
-                  text: "Cancel",
-                },
-              },
-              style: "primary",
-              value: req.id,
-            },
-          ],
-        },
-
-        {
-          type: "divider",
-        },
-        {
-          type: "header",
-          text: {
-            type: "plain_text",
-            text: "What is the task you are trying to accomplish? What is the goal?",
-            emoji: true,
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "plain_text",
-            text: payload.view.state.values[1].my_action.value,
-            emoji: true,
-          },
-        },
-        {
-          type: "header",
-          text: {
-            type: "plain_text",
-            text: "What do you think the problem or impediment is?",
-            emoji: true,
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "plain_text",
-            text: `${payload.view.state.values[2].my_action.value}`,
-            emoji: true,
-          },
-        },
-        {
-          type: "header",
-          text: {
-            type: "plain_text",
-            text: "What have you specifically tried in your code?",
-            emoji: true,
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "plain_text",
-            text: `${payload.view.state.values[3].my_action.value}`,
-            emoji: true,
-          },
-        },
-        {
-          type: "header",
-          text: {
-            type: "plain_text",
-            text: "What did you learn by dropping a breakpoint?",
-            emoji: true,
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "plain_text",
-            text: `${payload.view.state.values[4].my_action.value}`,
-            emoji: true,
-          },
-        },
-      ],
-      attachments: [
-        {
-          text: " ",
-          callback_id: "ping:instructor",
-          color: "#3AA3E3",
-          actions: [
-            {
-              name: "slack",
-              text: "In on Slack",
-              type: "button",
-              value: req.id,
-            },
-            {
-              name: "zoom",
-              text: "In on Zoom",
-              type: "button",
-              value: req.id,
-            },
-            {
-              name: "screenshot",
-              text: "Request Screenshots",
-              type: "button",
-              value: req.id,
-            },
-          ],
-        },
-      ],
-    });
-    console.log(result);
-  } catch (error) {
-    console.error(error);
-  }
   try {
     let studentQCard = await client.chat.postMessage({
       token: botToken.botToken,
@@ -488,7 +239,8 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
-    console.log(studentQCard);
+    studentQTS = studentQCard.message.ts;
+    console.log("STUDENT CARD ", studentQCard);
   } catch (error) {
     console.error(error);
   }
@@ -503,11 +255,305 @@ const postQ = async (req, res, payload) => {
     console.log(error);
   }
 
+    let cardLink = await client.chat.getPermalink({
+      channel: req.id,
+      message_ts: studentQTS,
+    });
+
+  try {
+    let genQueue = await client.chat.postMessage({
+      token: botToken.botToken,
+
+      //TODO GEN queue channel
+      channel: "C0311NA00SH",
+      attachments: [
+        {
+          blocks: [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `${cohortStamp} ${req.chanName} ${cohortStamp}`,
+              },
+              accessory: {
+                type: "button",
+                text: {
+                  type: "plain_text",
+                  text: "Jump To Channel",
+                  emoji: true,
+                },
+                value: "click_me_123",
+                url: cardLink.permalink,
+                action_id: "jump2card",
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What is the task you are trying to accomplish? What is the goal?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: payload.view.state.values[1].my_action.value,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What do you think the problem or impediment is?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[2].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What have you specifically tried in your code?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[3].my_action.value}`,
+                emoji: true,
+              },
+            },
+            {
+              type: "header",
+              text: {
+                type: "plain_text",
+                text: "What did you learn by dropping a breakpoint?",
+                emoji: true,
+              },
+            },
+            {
+              type: "section",
+              text: {
+                type: "plain_text",
+                text: `${payload.view.state.values[4].my_action.value}`,
+                emoji: true,
+              },
+            },
+          ],
+        },
+      ],
+    });
+    tempGenQueue.push({
+      name: genQueue.message.text,
+      channel: genQueue.channel,
+      ts: genQueue.ts,
+    });
+    tempInstructotQueue.push({
+      name: genQueue.message.text,
+      channel: genQueue.channel,
+      ts: genQueue.ts,
+    });
+    console.log("Gen queue", genQueue);
+  } catch (error) {
+    console.error(error);
+  }
+
+ 
+
+  try {
+    const channelId = instructorQueue;
+    const result = await client.chat.postMessage({
+      token: botToken.botToken,
+      response_type: "status",
+
+      //TODO instructor channel
+      channel: instructorQueue,
+      text: `${req.chanName}`,
+      blocks: [
+        {
+          type: "divider",
+        },
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `${cohortStamp} ${req.chanName} ${cohortStamp}`,
+          },
+          accessory: {
+            type: "button",
+            text: {
+              type: "plain_text",
+              text: "Jump To Channel",
+              emoji: true,
+            },
+            value: "click_me_123",
+            url: cardLink.permalink,
+            action_id: "jump2card",
+          },
+        },
+        // {
+        //   type: "header",
+        //   text: {
+        //     type: "plain_text",
+        //     text: `${cohortStamp}  ${req.chanName} ${cohortStamp}`,
+        //     emoji: true,
+        //   },
+        // },
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              text: {
+                type: "plain_text",
+                emoji: true,
+                text: "Complete",
+              },
+              confirm: {
+                title: {
+                  type: "plain_text",
+                  text: "Are you sure?",
+                },
+                text: {
+                  type: "mrkdwn",
+                  text: "Please confirm the question card has been resolved",
+                },
+                confirm: {
+                  type: "plain_text",
+                  text: "Confirm",
+                },
+                deny: {
+                  type: "plain_text",
+                  text: "Cancel",
+                },
+              },
+              style: "primary",
+              value: req.id,
+            },
+          ],
+        },
+
+        {
+          type: "divider",
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: "What is the task you are trying to accomplish? What is the goal?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: payload.view.state.values[1].my_action.value,
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: "What do you think the problem or impediment is?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: `${payload.view.state.values[2].my_action.value}`,
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: "What have you specifically tried in your code?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: `${payload.view.state.values[3].my_action.value}`,
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: "What did you learn by dropping a breakpoint?",
+            emoji: true,
+          },
+        },
+        {
+          type: "section",
+          text: {
+            type: "plain_text",
+            text: `${payload.view.state.values[4].my_action.value}`,
+            emoji: true,
+          },
+        },
+        
+      ],
+      attachments: [
+        {
+          text: " ",
+          callback_id: "ping:instructor",
+          color: "#3AA3E3",
+          actions: [
+            {
+              name: "slack",
+              text: "In on Slack",
+              type: "button",
+              value: req.id,
+            },
+            {
+              name: "zoom",
+              text: "In on Zoom",
+              type: "button",
+              value: req.id,
+            },
+            {
+              name: "screenshot",
+              text: "Request Screenshots",
+              type: "button",
+              value: req.id,
+            },
+          ],
+        },
+      ],
+    });
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
+
   //General queue
   try {
     if (studentName[1] === "astatine") {
       let at = await client.chat.postMessage({
         token: botToken.botToken,
+
+        //TODO ASTATINE QUEUE channel
         channel: "C0314KUTMK4",
         text: req.chanName,
         blocks: [
@@ -529,6 +575,8 @@ const postQ = async (req, res, payload) => {
     } else if (studentName[1] === "polonium") {
       let po = await client.chat.postMessage({
         token: botToken.botToken,
+
+        //TODO POLONIUM QUEUE channel
         channel: "C0316V40MHA",
         text: req.chanName,
         blocks: [
@@ -549,6 +597,8 @@ const postQ = async (req, res, payload) => {
     } else if (studentName[1] === "bismuth") {
       let bi = await client.chat.postMessage({
         token: botToken.botToken,
+
+        //TODO BISMUTH QUEUE channel
         channel: "C030Q20U6MV",
         text: req.chanName,
         blocks: [
