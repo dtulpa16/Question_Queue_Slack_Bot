@@ -22,7 +22,7 @@ let studentQTS = "";
 
 const qCardModal = async (data, res) => {
   // originalReq = data;
-  console.log("");
+  console.log("Modal Open");
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
@@ -263,7 +263,7 @@ const postQ = async (req, res, payload) => {
   try {
     let genQueue = await client.chat.postMessage({
       token: botToken.botToken,
-
+      text:req.chanName,
       //TODO GEN queue channel
       channel: "C0311NA00SH",
       attachments: [
