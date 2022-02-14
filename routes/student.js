@@ -17,18 +17,15 @@ const client = new WebClient(botToken.botToken, {
   // LogLevel can be imported and used to make debugging simpler
   logLevel: LogLevel.DEBUG,
 });
-let reqData = "";
-let resData = "";
+
 let tempQueue = [];
 
 router.post("/", async (req, res) => {
-  reqData = req;
-  resData = res;
   console.log("Original Req: ", req.body);
   if(req.body.text == 'showtime'){
     screenshots.showTime(res)
   }else{
-    qCardModal(req, res);
+    return qCardModal(req, res);
   }
   
 });
@@ -36,6 +33,8 @@ router.post("/", async (req, res) => {
 //Interaction handler
 
 router.post("/notify", async (req, res) => {
+  console.log('Modal sent')
+
   let chosenFile =
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
@@ -44,16 +43,9 @@ router.post("/notify", async (req, res) => {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
     if (payload.type === "view_submission") {
-      // let updatePost = await client.chat.postMessage({
-      //   token:botToken.botToken,
-      //   channel: "C0315TKH370",
-      //   text: 'hi!'
-      // });
-
       console.log("TEST SUBMIT", payload.view.blocks[4]);
       let channelData = payload.view.blocks[4].elements[0].text.split(" ");
       let postChan = { id: channelData[1], chanName: channelData[0] };
-
       postQ(postChan, res, payload);
       return res.status(200).send("");
     } else if (payload.type === "interactive_message") {
@@ -193,5 +185,6 @@ router.get("/auth", async (req, res) => {
     console.log(error);
   }
 });
+
 
 module.exports = router;
