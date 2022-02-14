@@ -279,7 +279,7 @@ const postQ = async (req, res, payload) => {
                 type: "button",
                 text: {
                   type: "plain_text",
-                  text: "Jump To Channel",
+                  text: "Go To Card",
                   emoji: true,
                 },
                 value: "click_me_123",
