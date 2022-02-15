@@ -135,6 +135,7 @@ const qCardModal = async (data, res) => {
 };
 
 const postQ = async (req, res, payload) => {
+  console.log('PostQ Function Hit')
   let studentName = req.chanName.split("_");
   let cohortStamp = "";
   if (studentName[1] === "bismuth") {
@@ -146,6 +147,7 @@ const postQ = async (req, res, payload) => {
   }
 
   try {
+    console.log('Within Try request for post to student channel')
     let studentQCard = await client.chat.postMessage({
       token: botToken.botToken,
       channel: req.id,
@@ -242,7 +244,7 @@ const postQ = async (req, res, payload) => {
     studentQTS = studentQCard.message.ts;
     console.log("STUDENT CARD ", studentQCard);
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
   try {
     let SSRequest = await client.chat.postMessage({
@@ -265,7 +267,7 @@ const postQ = async (req, res, payload) => {
       token: botToken.botToken,
       text:req.chanName,
       //TODO GEN queue channel
-      channel: "C0311NA00SH",
+      channel: "C0334J191KN",
       attachments: [
         {
           blocks: [
@@ -379,7 +381,7 @@ const postQ = async (req, res, payload) => {
       response_type: "status",
 
       //TODO instructor channel
-      channel: instructorQueue,
+      channel: "C032VJSJUNS",
       text: `${req.chanName}`,
       blocks: [
         {
@@ -403,14 +405,6 @@ const postQ = async (req, res, payload) => {
             action_id: "jump2card",
           },
         },
-        // {
-        //   type: "header",
-        //   text: {
-        //     type: "plain_text",
-        //     text: `${cohortStamp}  ${req.chanName} ${cohortStamp}`,
-        //     emoji: true,
-        //   },
-        // },
         {
           type: "actions",
           elements: [
@@ -554,7 +548,7 @@ const postQ = async (req, res, payload) => {
         token: botToken.botToken,
 
         //TODO ASTATINE QUEUE channel
-        channel: "C0314KUTMK4",
+        channel: "C0334G1S1CL",
         text: req.chanName,
         blocks: [
           {
@@ -577,7 +571,7 @@ const postQ = async (req, res, payload) => {
         token: botToken.botToken,
 
         //TODO POLONIUM QUEUE channel
-        channel: "C0316V40MHA",
+        channel: "C032MKG3KP1",
         text: req.chanName,
         blocks: [
           {
@@ -599,7 +593,7 @@ const postQ = async (req, res, payload) => {
         token: botToken.botToken,
 
         //TODO BISMUTH QUEUE channel
-        channel: "C030Q20U6MV",
+        channel: "C0334G1S1CL",
         text: req.chanName,
         blocks: [
           {
@@ -618,7 +612,7 @@ const postQ = async (req, res, payload) => {
       });
     }
 
-    console.log("hi");
+    console.log("");
   } catch (error) {
     console.error(error);
   }

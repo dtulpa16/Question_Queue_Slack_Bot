@@ -22,18 +22,17 @@ let tempQueue = [];
 
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
-  if(req.body.text == 'showtime'){
-    screenshots.showTime(res)
-  }else{
+  if (req.body.text == "showtime") {
+    screenshots.showTime(res);
+  } else {
     return qCardModal(req, res);
   }
-  
 });
 
 //Interaction handler
 
 router.post("/notify", async (req, res) => {
-  console.log('Modal sent')
+  console.log("Modal sent");
 
   let chosenFile =
     screenshots.screenshots[
@@ -46,7 +45,7 @@ router.post("/notify", async (req, res) => {
       console.log("TEST SUBMIT", payload.view.blocks[4]);
       let channelData = payload.view.blocks[4].elements[0].text.split(" ");
       let postChan = { id: channelData[1], chanName: channelData[0] };
-      postQ(postChan, res, payload);
+      await postQ(postChan, res, payload);
       return res.status(200).send("");
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
@@ -54,10 +53,10 @@ router.post("/notify", async (req, res) => {
           //TODO Student Updates Channel
           let updatePost = await client.chat.postMessage({
             response_type: "status",
-            channel: "C0314LFSMB4",
+            channel: "GNE49MV4M",
             text: payload.user.name + " // " + payload.original_message.text,
           });
-          completeStudentUpdates(updatePost);
+          await completeStudentUpdates(updatePost);
           await client.reactions.add({
             channel: payload.channel.id,
             name: "heavy_check_mark",
@@ -100,7 +99,7 @@ router.post("/notify", async (req, res) => {
         } catch (error) {
           console.log(error);
         }
-        studentComplete(payload.actions[0].value);
+        await studentComplete(payload.actions[0].value);
       } else if (payload.actions[0].name === "screenshot") {
         try {
           let screenshotRequest = await client.chat.postMessage({
@@ -127,11 +126,10 @@ router.post("/notify", async (req, res) => {
       }
     } else if (payload.type === "block_actions") {
       if (payload.actions[0].action_id == "jump2card") {
-        console.log(' ')
-      }
-      else if (payload.actions[0].action_id == "resolved") {
+        console.log(" ");
+      } else if (payload.actions[0].action_id == "resolved") {
         try {
-          studentComplete(payload.actions[0].value);
+          await studentComplete(payload.actions[0].value);
           let studentCompletion = await client.reactions.add({
             channel: payload.channel.id,
             name: "white_check_mark",
@@ -153,8 +151,8 @@ router.post("/notify", async (req, res) => {
             channel: channelId,
             ts: messageId,
           });
-          instructorComplete(payload.message.text, payload.user.name);
-          removeFromQueue(payload.message.text, {
+          await instructorComplete(payload.message.text, payload.user.name);
+          await removeFromQueue(payload.message.text, {
             ts: payload.message.ts,
             user: payload.user.id,
           });
@@ -185,6 +183,5 @@ router.get("/auth", async (req, res) => {
     console.log(error);
   }
 });
-
 
 module.exports = router;
