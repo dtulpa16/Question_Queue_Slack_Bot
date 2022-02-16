@@ -23,7 +23,7 @@ let tempQueue = [];
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
   if (req.body.text == "showtime") {
-    screenshots.showTime(res);
+    await screenshots.showTime(res);
   } else {
     return qCardModal(req, res);
   }
@@ -61,6 +61,10 @@ router.post("/notify", async (req, res) => {
             channel: payload.channel.id,
             name: "heavy_check_mark",
             timestamp: payload.message_ts,
+          });
+          await client.chat.postMessage({
+            channel: payload.actions[0].value,
+            text: ":heavy_check_mark:",
           });
           return res.status(200).send("");
         } catch (error) {
@@ -151,21 +155,32 @@ router.post("/notify", async (req, res) => {
             channel: channelId,
             ts: messageId,
           });
-          await instructorComplete(payload.message.text, payload.user.name);
-          await removeFromQueue(payload.message.text, {
-            ts: payload.message.ts,
-            user: payload.user.id,
-          });
           console.log(result);
         } catch (error) {
-          console.error(error);
+          console.log(error);
+        }
+        try{
+          await instructorComplete(payload.message.text, payload.user.name);
+        }catch(error){
+          console.log(error)
+          console.log('Error occurred trying to mark card as complete in archive channel. Error note added 16FEB22')
+        }
+        try{
+          let queueRemoval = await removeFromQueue(payload.message.text, {
+            ts: payload.message.ts,
+            user: payload.user.id,
+          })
+          console.log(queueRemoval)
+        }catch(error){
+          console.log(error)
+          console.log('Error occurred trying to remove student from queue. Error note added 16FEB22')
         }
       }
     }
 
     return console.log("");
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 });
 

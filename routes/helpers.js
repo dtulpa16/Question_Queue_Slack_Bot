@@ -91,7 +91,7 @@ const qCardModal = async (data, res) => {
               type: "plain_text_input",
               multiline: true,
               action_id: "my_action",
-              min_length: 50,
+              min_length: 51,
             },
             label: {
               type: "plain_text",
@@ -135,7 +135,7 @@ const qCardModal = async (data, res) => {
 };
 
 const postQ = async (req, res, payload) => {
-  console.log('PostQ Function Hit')
+  console.log("PostQ Function Hit");
   let studentName = req.chanName.split("_");
   let cohortStamp = "";
   if (studentName[1] === "bismuth") {
@@ -147,7 +147,7 @@ const postQ = async (req, res, payload) => {
   }
 
   try {
-    console.log('Within Try request for post to student channel')
+    console.log("Within Try request for post to student channel");
     let studentQCard = await client.chat.postMessage({
       token: botToken.botToken,
       channel: req.id,
@@ -257,15 +257,15 @@ const postQ = async (req, res, payload) => {
     console.log(error);
   }
 
-    let cardLink = await client.chat.getPermalink({
-      channel: req.id,
-      message_ts: studentQTS,
-    });
+  let cardLink = await client.chat.getPermalink({
+    channel: req.id,
+    message_ts: studentQTS,
+  });
 
   try {
     let genQueue = await client.chat.postMessage({
       token: botToken.botToken,
-      text:req.chanName,
+      text: req.chanName,
       //TODO GEN queue channel
       channel: "C0334J191KN",
       attachments: [
@@ -371,8 +371,6 @@ const postQ = async (req, res, payload) => {
   } catch (error) {
     console.error(error);
   }
-
- 
 
   try {
     const channelId = instructorQueue;
@@ -506,7 +504,6 @@ const postQ = async (req, res, payload) => {
             emoji: true,
           },
         },
-        
       ],
       attachments: [
         {
@@ -593,7 +590,7 @@ const postQ = async (req, res, payload) => {
         token: botToken.botToken,
 
         //TODO BISMUTH QUEUE channel
-        channel: "C0334G1S1CL",
+        channel: "C032MK92EJ3",
         text: req.chanName,
         blocks: [
           {
@@ -631,6 +628,8 @@ const removeFromQueue = async (data, messageData) => {
   let studentToDelete = tempQueue.filter((e) => {
     if (e.name === data) {
       return true;
+    } else {
+      return false;
     }
   });
   try {
@@ -640,6 +639,7 @@ const removeFromQueue = async (data, messageData) => {
     });
     console.log(deleteStudent);
   } catch (error) {
+    console.log(error);
     try {
       let errorReply = await client.chat.postMessage({
         channel: "U02JSDX1JBV",
@@ -650,12 +650,9 @@ const removeFromQueue = async (data, messageData) => {
       console.log(error);
     }
   }
-  try {
-    const removeStudent = tempQueue.findIndex((e) => e.name === data);
-    tempQueue.splice(removeStudent, 1);
-  } catch (error) {
-    console.log(error);
-  }
+  const removeStudent = tempQueue.findIndex((e) => e.name === data);
+  tempQueue.splice(removeStudent, 1);
+  
 };
 
 const studentComplete = async (data) => {
@@ -695,6 +692,8 @@ const studentComplete = async (data) => {
 };
 
 const instructorComplete = async (data, resolver) => {
+  console.log("Temp queue prior to filter ", tempInstructotQueue);
+  console.log("Student name to be used in filter ", data);
   let cardTocomplete = tempInstructotQueue.filter((e) => {
     if (e.name === data) {
       return true;
@@ -702,12 +701,19 @@ const instructorComplete = async (data, resolver) => {
       return false;
     }
   });
+
   try {
-    client.reactions.add({
+    let archiveMark = await client.reactions.add({
+      response_type: "status",
       channel: cardTocomplete[0].channel,
       name: "ballot_box_with_check",
       timestamp: cardTocomplete[0].ts,
     });
+    console.log(archiveMark);
+  } catch (error) {
+    console.log("Error in marking archive card : ", error);
+  }
+  try {
     let instructorResolution = await client.chat.postMessage({
       // The token you used to initialize your app
       response_type: "status",
@@ -731,11 +737,14 @@ const instructorComplete = async (data, resolver) => {
       }
     }
   }
+
   const removeFromInstructorQueue = tempInstructotQueue.findIndex(
     (e) => e.name === data
   );
   tempInstructotQueue.splice(removeFromInstructorQueue, 1);
+  console.log("Temp queue after to filter ", tempInstructotQueue)
 
+  //TODO This filter is used to udpate the student updates channel(sends "back" emoji)
   let updateToUpdate = tempStudentUpdates.filter((e) => {
     if (e.name === data) {
       return true;
