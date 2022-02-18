@@ -1,10 +1,31 @@
 const mongoose = require("mongoose");
 
-const studentSchema = new mongoose.Schema({
+const classQueueSchema = new mongoose.Schema({
   name: { type: String, required: true, maxlength: 100 },
-  cohort: { type: String, required: true, maxlength: 100 },
-  time: { type: Date, default: Date.now },
+  channel: { type: String, required: true, maxlength: 100 },
+  ts: { type: String, required: true, maxlength: 100 },
+});
+const genQueueSchema = new mongoose.Schema({
+  name: { type: String, required: true, maxlength: 100 },
+  channel: { type: String, required: true, maxlength: 100 },
+  ts: { type: String, required: true, maxlength: 100 },
+});
+const instructorQueueSchema = new mongoose.Schema({
+  name: { type: String, required: true, maxlength: 100 },
+  channel: { type: String, required: true, maxlength: 100 },
+  ts: { type: String, required: true, maxlength: 100 },
+});
+const studentUpdateSchema = new mongoose.Schema({
+  name: { type: String, required: true, maxlength: 100 },
+  channel: { type: String, required: true, maxlength: 100 },
+  ts: { type: String, required: true, maxlength: 100 },
 });
 
-const Student = mongoose.model('Student', studentSchema)
-module.exports = Student
+const classQueue = mongoose.model('classQueue', classQueueSchema)
+const GenQueue = mongoose.model('GenQueue', genQueueSchema)
+const InstructorQueue = mongoose.model('InstructorQueue', instructorQueueSchema)
+const StudentUpdateQueue = mongoose.model('StudentUpdateQueue', studentUpdateSchema)
+exports.classQueue = classQueue
+exports.GenQueue = GenQueue
+exports.InstructorQueue = InstructorQueue
+exports.StudentUpdateQueue = StudentUpdateQueue

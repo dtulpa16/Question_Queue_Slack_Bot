@@ -1,4 +1,4 @@
-const Student = require("../models/student");
+
 const express = require("express");
 const screenshots = require("../Images/screenshots");
 const router = express.Router();
@@ -17,12 +17,12 @@ const client = new WebClient(botToken.botToken, {
   // LogLevel can be imported and used to make debugging simpler
   logLevel: LogLevel.DEBUG,
 });
-
+const connectDB = require("../startup/db");
 let tempQueue = [];
 
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
-  if (req.body.text == "showtime") {
+  if (req.body.text == "secret") {
     await screenshots.showTime(res);
   } else {
     return qCardModal(req, res);
@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
 
 router.post("/notify", async (req, res) => {
   console.log("Modal sent");
-
+  connectDB()
   let chosenFile =
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
