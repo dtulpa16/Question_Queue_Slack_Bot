@@ -1,6 +1,11 @@
 const slackInteractiveMessages = require("@slack/interactive-messages");
 const screenshots = require("../Images/screenshots");
-const {classQueue, GenQueue, InstructorQueue, StudentUpdateQueue} = require('../models/student')
+const {
+  classQueue,
+  GenQueue,
+  InstructorQueue,
+  StudentUpdateQueue,
+} = require("../models/student");
 const { App } = require("@slack/bolt");
 const { WebClient, LogLevel } = require("@slack/web-api");
 const botToken = require("../keys/keys");
@@ -8,7 +13,7 @@ const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
 
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 let originalReq = "";
 const poloniumQueueChannel = "C0316V40MHA";
@@ -146,6 +151,14 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":84-po:";
   } else if (studentName[1] === "astatine") {
     cohortStamp = ":85-at:";
+  }else if (studentName[1] === "radon") {
+    cohortStamp = ":86-rn:";
+  }else if (studentName.length > 2 && studentName[3] === "radon") {
+    cohortStamp = ":spider_web: :86-rn:";
+  }else if (studentName.length > 2 && studentName[3] === "astatine") {
+    cohortStamp = ":spider_web: :85-at:";
+  }else if (studentName.length > 2 && studentName[3] === "radon") {
+    cohortStamp = ":spider_web: :86-rn:";
   }
 
   try {
@@ -359,28 +372,20 @@ const postQ = async (req, res, payload) => {
         },
       ],
     });
-    // tempGenQueue.push({
-    //   name: genQueue.message.text,
-    //   channel: genQueue.channel,
-    //   ts: genQueue.ts,
-    // });
+
     let enQueue = new GenQueue({
-      name:genQueue.message.text,
-      channel:genQueue.channel,
+      name: genQueue.message.text,
+      channel: genQueue.channel,
       ts: genQueue.ts,
-    })
-    enQueue.save()
+    });
+    enQueue.save();
     let nstructorQueue = new InstructorQueue({
-      name:genQueue.message.text,
-      channel:genQueue.channel,
+      name: genQueue.message.text,
+      channel: genQueue.channel,
       ts: genQueue.ts,
-    })
-    nstructorQueue.save()
-    // tempInstructotQueue.push({
-    //   name: genQueue.message.text,
-    //   channel: genQueue.channel,
-    //   ts: genQueue.ts,
-    // });
+    });
+    nstructorQueue.save();
+
     console.log("Gen queue", genQueue);
   } catch (error) {
     console.error(error);
@@ -557,7 +562,6 @@ const postQ = async (req, res, payload) => {
     if (studentName[1] === "astatine") {
       let at = await client.chat.postMessage({
         token: botToken.botToken,
-
         //TODO ASTATINE QUEUE channel
         channel: "C0334G1S1CL",
         text: req.chanName,
@@ -571,23 +575,15 @@ const postQ = async (req, res, payload) => {
           },
         ],
       });
-      console.log("Temp queue before push (Astatine): ", tempQueue);
       let lassQueueSchema = new classQueue({
-        name:at.message.text,
-        channel:at.channel,
+        name: at.message.text,
+        channel: at.channel,
         ts: at.ts,
-      })
-      lassQueueSchema.save()
-      // tempQueue.push({
-      //   name: at.message.text,
-      //   channel: at.channel,
-      //   ts: at.ts,
-      // });
-      console.log("Temp queue after push (Astatine): ", tempQueue);
+      });
+      lassQueueSchema.save();
     } else if (studentName[1] === "polonium") {
       let po = await client.chat.postMessage({
         token: botToken.botToken,
-
         //TODO POLONIUM QUEUE channel
         channel: "C032MKG3KP1",
         text: req.chanName,
@@ -601,23 +597,16 @@ const postQ = async (req, res, payload) => {
           },
         ],
       });
-      console.log("Temp queue before push (Polonium): ", tempQueue);
+
       let lassQueueSchema = new classQueue({
-        name:po.message.text,
-        channel:po.channel,
+        name: po.message.text,
+        channel: po.channel,
         ts: po.ts,
-      })
-      lassQueueSchema.save()
-      // tempQueue.push({
-      //   name: po.message.text,
-      //   channel: po.channel,
-      //   ts: po.ts,
-      // });
-      console.log("Temp queue after push (Polonium): ", tempQueue);
+      });
+      lassQueueSchema.save();
     } else if (studentName[1] === "bismuth") {
       let bi = await client.chat.postMessage({
         token: botToken.botToken,
-
         //TODO BISMUTH QUEUE channel
         channel: "C032MK92EJ3",
         text: req.chanName,
@@ -631,19 +620,82 @@ const postQ = async (req, res, payload) => {
           },
         ],
       });
-      console.log("Temp queue before push (Bismuth): ", tempQueue);
+
       let lassQueueSchema = new classQueue({
-        name:bi.message.text,
-        channel:bi.channel,
+        name: bi.message.text,
+        channel: bi.channel,
         ts: bi.ts,
-      })
-      lassQueueSchema.save()
-      // tempQueue.push({
-      //   name: bi.message.text,
-      //   channel: bi.channel,
-      //   ts: bi.ts,
-      // });
-      console.log("Temp queue after push (Bismuth): ", tempQueue);
+      });
+      lassQueueSchema.save();
+    }else if (studentName[1] === "radon") {
+      let rn = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO RADON QUEUE channel
+        channel: "C034LGPMG5N",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: rn.message.text,
+        channel: rn.channel,
+        ts: rn.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName.length > 2 && studentName[3] === "astatine") {
+      let wda = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO WEBDEV ASTATINE QUEUE channel
+        channel: "C033WQ66J2E",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: wda.message.text,
+        channel: wda.channel,
+        ts: wda.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName.length > 2 && studentName[3] === "radon") {
+      let wdr = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO WEBDEV RADON QUEUE channel
+        channel: "C033TT0RCBF",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: wdr.message.text,
+        channel: wdr.channel,
+        ts: wdr.ts,
+      });
+      lassQueueSchema.save();
     }
 
     console.log("");
@@ -654,29 +706,26 @@ const postQ = async (req, res, payload) => {
 
 const completeStudentUpdates = async (data) => {
   let name = data.message.text.split(" // ");
-  // tempStudentUpdates.push({
-  //   name: name[1],
-  //   ts: data.ts,
-  //   channel: data.channel,
-  // });
+
   let tudentUpdateQueue = new StudentUpdateQueue({
     name: name[1],
-    channel:data.channel,
+    channel: data.channel,
     ts: data.ts,
-  })
-  tudentUpdateQueue.save()
+  });
+  tudentUpdateQueue.save();
 };
 
 const removeFromQueue = async (data, messageData) => {
-  // let studentToDelete = tempQueue.filter((e) => {
-  //   if (e.name === data) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // });
-  let studentToDelete = await classQueue.find({name: data}, function(err,obj) { console.log(obj); }).clone()
-  console.log(studentToDelete)
+  let studentToDelete = await classQueue
+    .find({ name: data }, function (err, obj) {
+      console.log(obj);
+    })
+    .clone();
+
+  console.log(
+    "Query return in function that removes student from their class queue: ",
+    studentToDelete
+  );
   try {
     let deleteStudent = await client.chat.delete({
       channel: studentToDelete[0].channel,
@@ -695,49 +744,18 @@ const removeFromQueue = async (data, messageData) => {
       console.log(error);
     }
   }
-  // try {
-  //   let deleteStudent = await client.chat.delete({
-  //     channel: studentToDelete[0].channel,
-  //     ts: studentToDelete[0].ts,
-  //   });
-  //   console.log(deleteStudent);
-  // } catch (error) {
-  //   console.log(error);
-  //   try {
-  //     let errorReply = await client.chat.postMessage({
-  //       channel: "U02JSDX1JBV",
-  //       text: `An error occurred trying to remove ${data} from their class queue. Please manually remove them from the queue & mark their question as complete in the Q card archive channel`,
-  //     });
-  //     console.log(errorReply);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
-  await classQueue.deleteOne({name: data})
-
-  // const removeStudent = tempQueue.findIndex((e) => e.name === data);
-  // tempQueue.splice(removeStudent, 1);
-
-  // tempQueue = tempQueue.filter((e) => {
-  //   // return e.name !== data;
-  //   if(e.name !== data){
-  //     return true
-  //   }else{
-  //     return false
-  //   }
-  // });
+  await classQueue.deleteOne({ name: data });
 };
 
 const studentComplete = async (data) => {
-  let cardTocomplete = await GenQueue.find({name: data}, function(err,obj) { console.log(obj); }).clone()
-  console.log('gen queue card to be marked from mongo return', cardTocomplete)
-  // let cardTocomplete = tempGenQueue.filter((e) => {
-  //   if (e.name === data) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // });
+  let cardTocomplete = await GenQueue.find({ name: data }, function (err, obj) {
+    console.log(obj);
+  }).clone();
+  console.log(
+    "gen queue card to be marked from mongo return(student resolution)",
+    cardTocomplete
+  );
+
   try {
     let replyResolution = await client.chat.postMessage({
       channel: cardTocomplete[0].channel,
@@ -762,48 +780,20 @@ const studentComplete = async (data) => {
       console.log(error);
     }
   }
-  await GenQueue.deleteOne({name: data})
-  // try {
-  //   let replyResolution = await client.chat.postMessage({
-  //     channel: cardTocomplete[0].channel,
-  //     thread_ts: cardTocomplete[0].ts,
-  //     text: "Resolved in student channel",
-  //   });
-  //   await client.reactions.add({
-  //     channel: cardTocomplete[0].channel,
-  //     name: "white_check_mark",
-  //     timestamp: cardTocomplete[0].ts,
-  //   });
-  //   console.log(replyResolution);
-  // } catch (error) {
-  //   console.log(error);
-  //   try {
-  //     let errorReply = await client.chat.postMessage({
-  //       channel: "U02JSDX1JBV",
-  //       text: `An error occurred. A Q card was marked as "complete" by student: ${cardTocomplete[0].name}. Check there channel + Gen Queue to ensure no error`,
-  //     });
-  //     console.log(errorReply);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
-  // // const removeFromGenQueue = tempGenQueue.findIndex((e) => e.name === data);
-  // // tempGenQueue.splice(removeFromGenQueue, 1);
-  // tempGenQueue = tempGenQueue.filter((e) => {
-  //   // return e.name !== data;
-  //   if(e.name !== data){
-  //     return true
-  //   }else{
-  //     return false
-  //   }
-  // });
+  await GenQueue.deleteOne({ name: data });
 };
 
 const instructorComplete = async (data, resolver) => {
-  console.log("Temp queue prior to filter ", tempInstructotQueue);
-  console.log("Student name to be used in filter ", data);
-  let cardTocomplete = await InstructorQueue.find({name: data}, function(err,obj) { console.log(obj); }).clone()
-  
+  let cardTocomplete = await InstructorQueue.find(
+    { name: data },
+    function (err, obj) {
+      console.log(obj);
+    }
+  ).clone();
+  console.log(
+    "query return in function that marks card as complete in archive(instructor resolution): ",
+    cardTocomplete
+  );
 
   try {
     let archiveMark = await client.reactions.add({
@@ -818,92 +808,34 @@ const instructorComplete = async (data, resolver) => {
   }
   try {
     let instructorResolution = await client.chat.postMessage({
-      // The token you used to initialize your app
       response_type: "status",
       channel: cardTocomplete[0].channel,
       thread_ts: cardTocomplete[0].ts,
       text: `Resolved from instructor channel by ${resolver}`,
-      // You could also use a blocks[] array to send richer content
     });
     console.log(instructorResolution);
   } catch (error) {
     console.log(error);
-    // if (cardTocomplete.length > 0) {
-    //   try {
-    //     let errorReply = await client.chat.postMessage({
-    //       channel: "U02JSDX1JBV",
-    //       text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
-    //     });
-    //     console.log(errorReply);
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // }
+    try {
+      let errorReply = await client.chat.postMessage({
+        channel: "U02JSDX1JBV",
+        text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
+      });
+      console.log(errorReply);
+    } catch (error) {
+      console.log(error);
+    }
   }
-  await InstructorQueue.deleteOne({name: data})
-  
-  // let cardTocomplete = tempInstructotQueue.filter((e) => {
-  //   if (e.name === data) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // });
-
-  // try {
-  //   let archiveMark = await client.reactions.add({
-  //     response_type: "status",
-  //     channel: cardTocomplete[0].channel,
-  //     name: "ballot_box_with_check",
-  //     timestamp: cardTocomplete[0].ts,
-  //   });
-  //   console.log(archiveMark);
-  // } catch (error) {
-  //   console.log("Error in marking archive card : ", error);
-  // }
-  // try {
-  //   let instructorResolution = await client.chat.postMessage({
-  //     // The token you used to initialize your app
-  //     response_type: "status",
-  //     channel: cardTocomplete[0].channel,
-  //     thread_ts: cardTocomplete[0].ts,
-  //     text: `Resolved from instructor channel by ${resolver}`,
-  //     // You could also use a blocks[] array to send richer content
-  //   });
-  //   console.log(instructorResolution);
-  // } catch (error) {
-  //   console.log(error);
-  //   if (cardTocomplete.length > 0) {
-  //     try {
-  //       let errorReply = await client.chat.postMessage({
-  //         channel: "U02JSDX1JBV",
-  //         text: `An error occurred. A Q card was marked as "complete" by instructor in instructor queue. Check Gen queue to ensure it has been marked as Complete by instructor`,
-  //       });
-  //       console.log(errorReply);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  // }
-
-  
-  // const removeFromInstructorQueue = tempInstructotQueue.findIndex(
-  //   (e) => e.name === data
-  // );
-  // tempInstructotQueue.splice(removeFromInstructorQueue, 1);
-  // tempInstructotQueue = tempInstructotQueue.filter((e) => {
-  //   // return e.name !== data;
-  //   if(e.name !== data){
-  //     return true
-  //   }else{
-  //     return false
-  //   }
-  // });
-  // console.log("Temp queue after to filter ", tempInstructotQueue);
+  await InstructorQueue.deleteOne({ name: data });
 
   //TODO This filter is used to udpate the student updates channel(sends "back" emoji)
-  let updateToUpdate = await StudentUpdateQueue.find({name: data}, function(err,obj) { console.log(obj); }).clone()
-  console.log('student update mongo return', updateToUpdate)
+  let updateToUpdate = await StudentUpdateQueue.find(
+    { name: data },
+    function (err, obj) {
+      console.log(obj);
+    }
+  ).clone();
+  console.log("query return for student update query: ", updateToUpdate);
   try {
     let updateZoomStatus = await client.reactions.add({
       response_type: "status",
@@ -911,40 +843,11 @@ const instructorComplete = async (data, resolver) => {
       name: "back",
       timestamp: updateToUpdate[0].ts,
     });
-    await StudentUpdateQueue.deleteOne({name: data})
+    await StudentUpdateQueue.deleteOne({ name: data });
     console.log(updateZoomStatus);
   } catch (error) {
     console.log(error);
   }
-
-  // let updateToUpdate = tempStudentUpdates.filter((e) => {
-  //   if (e.name === data) {
-  //     return true;
-  //   } else {
-  //     return false;
-  //   }
-  // });
-  // try {
-  //   let updateZoomStatus = await client.reactions.add({
-  //     response_type: "status",
-  //     channel: updateToUpdate[0].channel,
-  //     name: "back",
-  //     timestamp: updateToUpdate[0].ts,
-  //   });
-  //   tempStudentUpdates = tempStudentUpdates.filter((e) => {
-  //     // return e.name !== data;
-  //     if(e.name !== data){
-  //       return true
-  //     }else{
-  //       return false
-  //     }
-  //   });
-  //   console.log(updateZoomStatus);
-  // } catch (error) {
-  //   console.log(error);
-  // }
-  // const outOfCall = tempStudentUpdates.findIndex((e) => e.name === data);
-  // tempStudentUpdates.splice(outOfCall, 1);
 };
 
 exports.completeStudentUpdates = completeStudentUpdates;

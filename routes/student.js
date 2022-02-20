@@ -82,11 +82,12 @@ router.post("/notify", async (req, res) => {
             timestamp: payload.message_ts,
           });
           //Reply to message with instructor who is in on slack
-          await client.chat.postMessage({
+          let replyThread = await client.chat.postMessage({
             channel: payload.channel.id,
             thread_ts: payload.original_message.ts,
             text: `${payload.user.name} in on slack`,
           });
+          console.log('REPLY THREAD: ', replyThread)
           return res.status(200).send("");
         } catch (error) {
           console.log(error);
