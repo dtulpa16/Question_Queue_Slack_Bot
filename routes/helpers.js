@@ -151,13 +151,13 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":84-po:";
   } else if (studentName[1] === "astatine") {
     cohortStamp = ":85-at:";
-  }else if (studentName[1] === "radon") {
+  } else if (studentName[1] === "radon") {
     cohortStamp = ":86-rn:";
-  }else if (studentName.length > 2 && studentName[3] === "radon") {
+  } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
-  }else if (studentName.length > 2 && studentName[3] === "astatine") {
+  } else if (studentName.length > 2 && studentName[3] === "astatine") {
     cohortStamp = ":spider_web: :85-at:";
-  }else if (studentName.length > 2 && studentName[3] === "radon") {
+  } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   }
 
@@ -627,7 +627,7 @@ const postQ = async (req, res, payload) => {
         ts: bi.ts,
       });
       lassQueueSchema.save();
-    }else if (studentName[1] === "radon") {
+    } else if (studentName[1] === "radon") {
       let rn = await client.chat.postMessage({
         token: botToken.botToken,
         //TODO RADON QUEUE channel

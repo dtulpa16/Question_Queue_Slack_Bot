@@ -20,6 +20,11 @@ const studentUpdateSchema = new mongoose.Schema({
   channel: { type: String, required: true, maxlength: 100 },
   ts: { type: String, required: true, maxlength: 100 },
 });
+const replySchema = new mongoose.Schema({
+  threadTs: { type: String, required: true, maxlength: 100 },
+  replyTs: { type: String, required: true, maxlength: 100 },
+  channel: { type: String, required: true, maxlength: 100 },
+});
 
 const classQueue = mongoose.model('classQueue', classQueueSchema)
 const GenQueue = mongoose.model('GenQueue', genQueueSchema)
