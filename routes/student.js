@@ -156,7 +156,17 @@ router.post("/notify", async (req, res) => {
             channel: channelId,
             ts: messageId,
           });
-          console.log(result);
+          console.log('Message deleted from Instructor queue',result);
+        } catch (error) {
+          console.log(error);
+        }
+        try {
+          // Call the chat.delete method using the WebClient
+          const replyToDelete = await client.chat.delete({
+            channel: channelId,
+            ts: payload.message.latest_reply,
+          });
+          console.log('Reply deleted from Instructor queue',replyToDelete);
         } catch (error) {
           console.log(error);
         }

@@ -21,7 +21,7 @@ const studentUpdateSchema = new mongoose.Schema({
   ts: { type: String, required: true, maxlength: 100 },
 });
 const replySchema = new mongoose.Schema({
-  threadTs: { type: String, required: true, maxlength: 100 },
+  messageTs: { type: String, required: true, maxlength: 100 },
   replyTs: { type: String, required: true, maxlength: 100 },
   channel: { type: String, required: true, maxlength: 100 },
 });
@@ -30,7 +30,9 @@ const classQueue = mongoose.model('classQueue', classQueueSchema)
 const GenQueue = mongoose.model('GenQueue', genQueueSchema)
 const InstructorQueue = mongoose.model('InstructorQueue', instructorQueueSchema)
 const StudentUpdateQueue = mongoose.model('StudentUpdateQueue', studentUpdateSchema)
+const qCardReplies = mongoose.model('QCardReplies', replySchema)
 exports.classQueue = classQueue
 exports.GenQueue = GenQueue
 exports.InstructorQueue = InstructorQueue
 exports.StudentUpdateQueue = StudentUpdateQueue
+exports.qCardReplies = qCardReplies
