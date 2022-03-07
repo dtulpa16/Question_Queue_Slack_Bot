@@ -20,19 +20,18 @@ const studentUpdateSchema = new mongoose.Schema({
   channel: { type: String, required: true, maxlength: 100 },
   ts: { type: String, required: true, maxlength: 100 },
 });
-const replySchema = new mongoose.Schema({
-  messageTs: { type: String, required: true, maxlength: 100 },
-  replyTs: { type: String, required: true, maxlength: 100 },
-  channel: { type: String, required: true, maxlength: 100 },
+const statTrackSchema = new mongoose.Schema({
+  QCardOpen: { type: Number, maxlength: 1000 },
+  QCardSent: { type: Number, maxlength: 1000 },
 });
 
 const classQueue = mongoose.model('classQueue', classQueueSchema)
 const GenQueue = mongoose.model('GenQueue', genQueueSchema)
 const InstructorQueue = mongoose.model('InstructorQueue', instructorQueueSchema)
 const StudentUpdateQueue = mongoose.model('StudentUpdateQueue', studentUpdateSchema)
-const qCardReplies = mongoose.model('QCardReplies', replySchema)
+const StatTrack = mongoose.model('StatTrack', statTrackSchema)
 exports.classQueue = classQueue
 exports.GenQueue = GenQueue
 exports.InstructorQueue = InstructorQueue
 exports.StudentUpdateQueue = StudentUpdateQueue
-exports.qCardReplies = qCardReplies
+exports.StatTrack = StatTrack

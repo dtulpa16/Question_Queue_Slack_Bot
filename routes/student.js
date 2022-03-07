@@ -1,4 +1,3 @@
-
 const express = require("express");
 const screenshots = require("../Images/screenshots");
 const router = express.Router();
@@ -12,17 +11,17 @@ const {
   completeStudentUpdates,
 } = require("./helpers");
 const botToken = require("../keys/keys");
+const { StatTrack } = require("../models/student");
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(botToken.botToken, {
   // LogLevel can be imported and used to make debugging simpler
   logLevel: LogLevel.DEBUG,
 });
 const connectDB = require("../startup/db");
-let tempQueue = [];
 
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
-  if (req.body.text == "secret") {
+  if (req.body.text == "1") {
     await screenshots.showTime(res);
   } else {
     return qCardModal(req, res);
@@ -33,7 +32,7 @@ router.post("/", async (req, res) => {
 
 router.post("/notify", async (req, res) => {
   console.log("Modal sent");
-  connectDB()
+  connectDB();
   let chosenFile =
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
@@ -87,7 +86,7 @@ router.post("/notify", async (req, res) => {
             thread_ts: payload.original_message.ts,
             text: `${payload.user.name} in on slack`,
           });
-          console.log('REPLY THREAD: ', replyThread)
+          console.log("REPLY THREAD: ", replyThread);
           return res.status(200).send("");
         } catch (error) {
           console.log(error);
@@ -156,7 +155,7 @@ router.post("/notify", async (req, res) => {
             channel: channelId,
             ts: messageId,
           });
-          console.log('Message deleted from Instructor queue',result);
+          console.log("Message deleted from Instructor queue", result);
         } catch (error) {
           console.log(error);
         }
@@ -166,25 +165,29 @@ router.post("/notify", async (req, res) => {
             channel: channelId,
             ts: payload.message.latest_reply,
           });
-          console.log('Reply deleted from Instructor queue',replyToDelete);
+          console.log("Reply deleted from Instructor queue", replyToDelete);
         } catch (error) {
           console.log(error);
         }
-        try{
+        try {
           await instructorComplete(payload.message.text, payload.user.name);
-        }catch(error){
-          console.log(error)
-          console.log('Error occurred trying to mark card as complete in archive channel. Error note added 16FEB22')
+        } catch (error) {
+          console.log(error);
+          console.log(
+            "Error occurred trying to mark card as complete in archive channel. Error note added 16FEB22"
+          );
         }
-        try{
+        try {
           let queueRemoval = await removeFromQueue(payload.message.text, {
             ts: payload.message.ts,
             user: payload.user.id,
-          })
-          console.log(queueRemoval)
-        }catch(error){
-          console.log(error)
-          console.log('Error occurred trying to remove student from queue. Error note added 16FEB22')
+          });
+          console.log(queueRemoval);
+        } catch (error) {
+          console.log(error);
+          console.log(
+            "Error occurred trying to remove student from queue. Error note added 16FEB22"
+          );
         }
       }
     }

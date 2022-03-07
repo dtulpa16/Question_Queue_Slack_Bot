@@ -5,6 +5,7 @@ const {
   GenQueue,
   InstructorQueue,
   StudentUpdateQueue,
+  StatTrack,
 } = require("../models/student");
 const { App } = require("@slack/bolt");
 const { WebClient, LogLevel } = require("@slack/web-api");
@@ -12,24 +13,17 @@ const botToken = require("../keys/keys");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
-
+const connectDB = require("../startup/db");
 const express = require("express");
 const router = express.Router();
-let originalReq = "";
-const poloniumQueueChannel = "C0316V40MHA";
-const astatineQueueChannel = "C0314KUTMK4";
-const bismuthQueueChannel = "C030Q20U6MV";
-const genQueueChannel = "C0311NA00SH";
 const instructorQueue = "C0314K9LXQS";
-let tempQueue = [];
-let tempGenQueue = [];
-let tempInstructotQueue = [];
-let tempStudentUpdates = [];
 let studentQTS = "";
 
 const qCardModal = async (data, res) => {
-  // originalReq = data;
-  console.log("Modal Open");
+  connectDB();
+  let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
+  incrementTest.QCardOpen++;
+  incrementTest.save();
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
@@ -38,18 +32,15 @@ const qCardModal = async (data, res) => {
       response_action: "clear",
       view: {
         type: "modal",
-
         callback_id: "gratitude-modal",
         title: {
           type: "plain_text",
           text: "Question Card",
-
           emoji: true,
         },
         submit: {
           type: "plain_text",
           text: "Submit",
-
           emoji: true,
         },
         close: {
@@ -60,13 +51,11 @@ const qCardModal = async (data, res) => {
         blocks: [
           {
             type: "input",
-
             block_id: "1",
             element: {
               type: "plain_text_input",
               action_id: "my_action",
               multiline: true,
-
               min_length: 50,
             },
             label: {
@@ -142,6 +131,13 @@ const qCardModal = async (data, res) => {
 };
 
 const postQ = async (req, res, payload) => {
+  try {
+    let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
+    incrementTest.QCardSent++;
+    incrementTest.save();
+  } catch (error) {
+    console.log('QCard Sent Error (Mongo)', error);
+  }
   console.log("PostQ Function Hit");
   let studentName = req.chanName.split("_");
   let cohortStamp = "";
@@ -235,18 +231,14 @@ const postQ = async (req, res, payload) => {
             },
             {
               type: "actions",
-
               elements: [
                 {
                   type: "button",
-
                   text: {
                     type: "plain_text",
                     text: "Resolved",
-
                     emoji: true,
                   },
-
                   value: req.chanName,
                   action_id: "resolved",
                 },
