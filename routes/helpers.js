@@ -136,7 +136,7 @@ const postQ = async (req, res, payload) => {
     incrementTest.QCardSent++;
     incrementTest.save();
   } catch (error) {
-    console.log('QCard Sent Error (Mongo)', error);
+    console.log("QCard Sent Error (Mongo)", error);
   }
   console.log("PostQ Function Hit");
   let studentName = req.chanName.split("_");
@@ -149,6 +149,8 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":85-at:";
   } else if (studentName[1] === "radon") {
     cohortStamp = ":86-rn:";
+  } else if (studentName[1] === "francium") {
+    cohortStamp = ":87-fr:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   } else if (studentName.length > 2 && studentName[3] === "astatine") {
@@ -640,6 +642,29 @@ const postQ = async (req, res, payload) => {
         name: rn.message.text,
         channel: rn.channel,
         ts: rn.ts,
+      });
+      lassQueueSchema.save();
+    }else if (studentName[1] === "francium") {
+      let fr = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO RADON QUEUE channel
+        channel: "C036UQELF51",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: fr.message.text,
+        channel: fr.channel,
+        ts: fr.ts,
       });
       lassQueueSchema.save();
     } else if (studentName.length > 2 && studentName[3] === "astatine") {
