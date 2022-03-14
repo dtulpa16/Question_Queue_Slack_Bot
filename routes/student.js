@@ -21,8 +21,8 @@ const connectDB = require("../startup/db");
 
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
-  if (req.body.text == "1") {
-    await screenshots.showTime(res);
+  if (req.body.text.length > 5) {
+    await screenshots.showTime(req.body.text, req.body.channel_id, res);
   } else {
     return qCardModal(req, res);
   }
