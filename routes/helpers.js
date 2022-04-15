@@ -151,6 +151,10 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":86-rn:";
   } else if (studentName[1] === "francium") {
     cohortStamp = ":87-fr:";
+  } else if (studentName[1] === "actinium") {
+    cohortStamp = ":89-ac:";
+  } else if (studentName[1] === "radium") {
+    cohortStamp = ":88-ra:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   } else if (studentName.length > 2 && studentName[3] === "astatine") {
@@ -644,7 +648,7 @@ const postQ = async (req, res, payload) => {
         ts: rn.ts,
       });
       lassQueueSchema.save();
-    }else if (studentName[1] === "francium") {
+    } else if (studentName[1] === "francium") {
       let fr = await client.chat.postMessage({
         token: botToken.botToken,
         //TODO RADON QUEUE channel
@@ -665,6 +669,52 @@ const postQ = async (req, res, payload) => {
         name: fr.message.text,
         channel: fr.channel,
         ts: fr.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName[1] === "actinium") {
+      let ac = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO RADON QUEUE channel
+        channel: "C038ELW0KU7",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: ac.message.text,
+        channel: ac.channel,
+        ts: ac.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName[1] === "radium") {
+      let ra = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO RADON QUEUE channel
+        channel: "C0397TEJPG9",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: ra.message.text,
+        channel: ra.channel,
+        ts: ra.ts,
       });
       lassQueueSchema.save();
     } else if (studentName.length > 2 && studentName[3] === "astatine") {
