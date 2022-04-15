@@ -44,8 +44,13 @@ router.post("/notify", async (req, res) => {
       console.log("TEST SUBMIT", payload.view.blocks[4]);
       let channelData = payload.view.blocks[4].elements[0].text.split(" ");
       let postChan = { id: channelData[1], chanName: channelData[0] };
-      await postQ(postChan, res, payload);
-      return res.status(200).send("");
+      if(postChan.chanName.includes('_')){
+        await postQ(postChan, res, payload);
+        return res.status(200).send("");
+      }else{
+        return res.status(200).send("");
+      }
+      
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
         try {
