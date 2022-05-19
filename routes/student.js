@@ -37,13 +37,26 @@ router.post("/notify", async (req, res) => {
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
     ];
-  try {
+  try { 
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
     if (payload.type === "view_submission") {
       console.log("TEST SUBMIT", payload.view.blocks[4]);
       let channelData = payload.view.blocks[4].elements[0].text.split(" ");
       let postChan = { id: channelData[1], chanName: channelData[0] };
+
+      try{
+        if(payload.view.state.values[1].my_action.value.includes('.....') || payload.view.state.values[2].my_action.value.includes('.....') || payload.view.state.values[3].my_action.value.includes('.....')){
+          let detailRequest = await client.chat.postMessage({
+            channel: postChan.id,
+            text: "`An error has occurred while attempting to post Q card. Please limit number of periods in text fields`",
+          })
+          return res.status(200).send("");
+        }
+      }catch(error){
+        console.log('Additional detail request: ', error)
+      }
+      
       if(postChan.chanName.includes('_')){
         await postQ(postChan, res, payload);
         return res.status(200).send("");

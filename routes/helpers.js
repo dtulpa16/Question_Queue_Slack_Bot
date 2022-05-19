@@ -87,7 +87,7 @@ const qCardModal = async (data, res) => {
               type: "plain_text_input",
               multiline: true,
               action_id: "my_action",
-              min_length: 51,
+              min_length: 50,
             },
             label: {
               type: "plain_text",
@@ -155,6 +155,8 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":89-ac:";
   } else if (studentName[1] === "radium") {
     cohortStamp = ":88-ra:";
+  } else if (studentName[1] === "uranium") {
+    cohortStamp = ":92-u:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   } else if (studentName.length > 2 && studentName[3] === "astatine") {
@@ -717,6 +719,29 @@ const postQ = async (req, res, payload) => {
         ts: ra.ts,
       });
       lassQueueSchema.save();
+    } else if (studentName[1] === "uranium") {
+      let ur = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO Uranium QUEUE channel
+        channel: "C03EB98UECD",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: ur.message.text,
+        channel: ur.channel,
+        ts: ur.ts,
+      });
+      lassQueueSchema.save();
     } else if (studentName.length > 2 && studentName[3] === "astatine") {
       let wda = await client.chat.postMessage({
         token: botToken.botToken,
@@ -896,14 +921,15 @@ const instructorComplete = async (data, resolver) => {
   await InstructorQueue.deleteOne({ name: data });
 
   //TODO This filter is used to udpate the student updates channel(sends "back" emoji)
-  let updateToUpdate = await StudentUpdateQueue.find(
-    { name: data },
-    function (err, obj) {
-      console.log(obj);
-    }
-  ).clone();
-  console.log("query return for student update query: ", updateToUpdate);
+
   try {
+    let updateToUpdate = await StudentUpdateQueue.find(
+      { name: data },
+      function (err, obj) {
+        console.log(obj);
+      }
+    ).clone();
+    console.log("query return for student update query: ", updateToUpdate);
     let updateZoomStatus = await client.reactions.add({
       response_type: "status",
       channel: updateToUpdate[0].channel,
