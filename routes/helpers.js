@@ -157,10 +157,14 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":88-ra:";
   } else if (studentName[1] === "uranium") {
     cohortStamp = ":92-u:";
+  } else if (studentName[1] === "plutonium") {
+    cohortStamp = ":94-pu:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   } else if (studentName.length > 2 && studentName[3] === "astatine") {
     cohortStamp = ":spider_web: :85-at:";
+  } else if (studentName.length > 2 && studentName[3] === "radon") {
+    cohortStamp = ":spider_web: :86-rn:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   }
@@ -396,8 +400,7 @@ const postQ = async (req, res, payload) => {
     const result = await client.chat.postMessage({
       token: botToken.botToken,
       response_type: "status",
-
-      //TODO instructor channel
+      //! instructor channel
       channel: "C032VJSJUNS",
       text: `${req.chanName}`,
       blocks: [
@@ -742,10 +745,31 @@ const postQ = async (req, res, payload) => {
         ts: ur.ts,
       });
       lassQueueSchema.save();
+    } else if (studentName[1] === "plutonium") {
+      let pu = await client.chat.postMessage({
+        token: botToken.botToken,
+        channel: "C03MZH2UUNL",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: pu.message.text,
+        channel: pu.channel,
+        ts: pu.ts,
+      });
+      lassQueueSchema.save();
     } else if (studentName.length > 2 && studentName[3] === "astatine") {
       let wda = await client.chat.postMessage({
         token: botToken.botToken,
-        //TODO WEBDEV ASTATINE QUEUE channel
         channel: "C033WQ66J2E",
         text: req.chanName,
         blocks: [
@@ -768,7 +792,6 @@ const postQ = async (req, res, payload) => {
     } else if (studentName.length > 2 && studentName[3] === "radon") {
       let wdr = await client.chat.postMessage({
         token: botToken.botToken,
-        //TODO WEBDEV RADON QUEUE channel
         channel: "C033TT0RCBF",
         text: req.chanName,
         blocks: [
@@ -919,9 +942,6 @@ const instructorComplete = async (data, resolver) => {
     }
   }
   await InstructorQueue.deleteOne({ name: data });
-
-  //TODO This filter is used to udpate the student updates channel(sends "back" emoji)
-
   try {
     let updateToUpdate = await StudentUpdateQueue.find(
       { name: data },

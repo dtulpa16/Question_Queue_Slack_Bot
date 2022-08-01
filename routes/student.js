@@ -14,7 +14,6 @@ const botToken = require("../keys/keys");
 const { StatTrack } = require("../models/student");
 const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(botToken.botToken, {
-  // LogLevel can be imported and used to make debugging simpler
   logLevel: LogLevel.DEBUG,
 });
 const connectDB = require("../startup/db");
@@ -37,7 +36,7 @@ router.post("/notify", async (req, res) => {
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
     ];
-  try { 
+  try {
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
     if (payload.type === "view_submission") {
@@ -45,25 +44,27 @@ router.post("/notify", async (req, res) => {
       let channelData = payload.view.blocks[4].elements[0].text.split(" ");
       let postChan = { id: channelData[1], chanName: channelData[0] };
 
-      try{
-        if(payload.view.state.values[1].my_action.value.includes('.....') || payload.view.state.values[2].my_action.value.includes('.....') || payload.view.state.values[3].my_action.value.includes('.....')){
+      try {
+        if (
+          payload.view.state.values[1].my_action.value.includes("......") ||
+          payload.view.state.values[2].my_action.value.includes("......")
+        ) {
           let detailRequest = await client.chat.postMessage({
             channel: postChan.id,
             text: "`An error has occurred while attempting to post Q card. Please limit number of periods in text fields`",
-          })
+          });
           return res.status(200).send("");
         }
-      }catch(error){
-        console.log('Additional detail request: ', error)
+      } catch (error) {
+        console.log("Additional detail request: ", error);
       }
-      
-      if(postChan.chanName.includes('_')){
+
+      if (postChan.chanName.includes("_")) {
         await postQ(postChan, res, payload);
         return res.status(200).send("");
-      }else{
+      } else {
         return res.status(200).send("");
       }
-      
     } else if (payload.type === "interactive_message") {
       if (payload.actions[0].name === "zoom") {
         try {
