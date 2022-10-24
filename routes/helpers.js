@@ -145,6 +145,8 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":83-bi:";
   } else if (studentName[1] === "polonium") {
     cohortStamp = ":84-po:";
+  } else if (studentName[1] === "seaborgium") {
+    cohortStamp = ":106-sq:";
   } else if (studentName[1] === "astatine") {
     cohortStamp = ":85-at:";
   } else if (studentName[1] === "radon") {
@@ -159,6 +161,13 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":92-u:";
   } else if (studentName[1] === "plutonium") {
     cohortStamp = ":94-pu:";
+  } else if (studentName[1] === "lawrencium") {
+    cohortStamp = ":103-lr:";
+  } else if (studentName[1] === "fermium") {
+    cohortStamp = ":100-fm:";
+  } else if (studentName.length > 2 && studentName[3] === "radon") {
+  } else if (studentName[1] === "californium") {
+    cohortStamp = ":surfer:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
     cohortStamp = ":spider_web: :86-rn:";
   } else if (studentName.length > 2 && studentName[3] === "astatine") {
@@ -584,6 +593,48 @@ const postQ = async (req, res, payload) => {
         ts: at.ts,
       });
       lassQueueSchema.save();
+    } else if (studentName[1] === "californium") {
+      let ca = await client.chat.postMessage({
+        token: botToken.botToken,
+        channel: "C03T7MVHL1W",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+      let lassQueueSchema = new classQueue({
+        name: ca.message.text,
+        channel: ca.channel,
+        ts: ca.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName[1] === "lawrencium") {
+      let lr = await client.chat.postMessage({
+        token: botToken.botToken,
+        channel: "C042D9MA5M0",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+      let lassQueueSchema = new classQueue({
+        name: lr.message.text,
+        channel: lr.channel,
+        ts: lr.ts,
+      });
+      lassQueueSchema.save();
     } else if (studentName[1] === "polonium") {
       let po = await client.chat.postMessage({
         token: botToken.botToken,
@@ -699,6 +750,29 @@ const postQ = async (req, res, payload) => {
         ts: ac.ts,
       });
       lassQueueSchema.save();
+    } else if (studentName[1] === "seaborgium") {
+      let sg = await client.chat.postMessage({
+        token: botToken.botToken,
+        //TODO RADON QUEUE channel
+        channel: "C04330EM5R6",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: sg.message.text,
+        channel: sg.channel,
+        ts: sg.ts,
+      });
+      lassQueueSchema.save();
     } else if (studentName[1] === "radium") {
       let ra = await client.chat.postMessage({
         token: botToken.botToken,
@@ -765,6 +839,28 @@ const postQ = async (req, res, payload) => {
         name: pu.message.text,
         channel: pu.channel,
         ts: pu.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName[1] === "fermium") {
+      let fr = await client.chat.postMessage({
+        token: botToken.botToken,
+        channel: "C03SP4EGJ21",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+
+      let lassQueueSchema = new classQueue({
+        name: fr.message.text,
+        channel: fr.channel,
+        ts: fr.ts,
       });
       lassQueueSchema.save();
     } else if (studentName.length > 2 && studentName[3] === "astatine") {

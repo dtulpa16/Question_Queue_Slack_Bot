@@ -20,6 +20,10 @@ const connectDB = require("../startup/db");
 
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
+  if (req.body.channel_name.includes("_") === false) {
+    await handleUserErr(req.body.channel_id, req.body.user_id);
+    return res.status(200).send("");
+  }
   if (req.body.text.length > 5) {
     await screenshots.showTime(req.body.text, req.body.channel_id, res);
   } else {
@@ -27,6 +31,21 @@ router.post("/", async (req, res) => {
   }
 });
 
+const handleUserErr = async (chanId, userId) => {
+  try {
+    // Call the chat.postEphemeral method using the WebClient
+    const result = await client.chat.postEphemeral({
+      channel: chanId,
+      user: userId,
+      text: "Whoops!! Wrong channel. Please only use the /queue in your instructor channel",
+    });
+
+    console.log(result);
+    return res.status(200).send("");
+  } catch (error) {
+    console.error(error);
+  }
+};
 //Interaction handler
 
 router.post("/notify", async (req, res) => {
@@ -46,15 +65,15 @@ router.post("/notify", async (req, res) => {
 
       try {
         if (
-          payload.view.state.values[1].my_action.value.includes("......") ||
+          payload.view.state.values[1].my_action.value.includes(".........") ||
           payload.view.state.values[2].my_action.value.includes("......")
         ) {
-          let detailRequest = await client.chat.postMessage({
+          await client.chat.postMessage({
             channel: postChan.id,
             text: "`An error has occurred while attempting to post Q card. Please limit number of periods in text fields`",
           });
           return res.status(200).send("");
-        }
+        } 
       } catch (error) {
         console.log("Additional detail request: ", error);
       }
