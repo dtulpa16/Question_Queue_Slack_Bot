@@ -1,10 +1,7 @@
 const serverless = require("serverless-http");
 const express = require("express");
 const app = express();
-const connectDB = require("./startup/db");
-const bodyParser = require("body-parser");
 const students = require("./routes/student");
-const bot = require("./routes/student");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
