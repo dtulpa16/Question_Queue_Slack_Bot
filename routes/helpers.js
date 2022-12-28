@@ -140,7 +140,12 @@ const postQ = async (req, res, payload) => {
   }
   console.log("PostQ Function Hit");
   let studentName = req.chanName.split("_");
+  //Check if question card came from from a flex channel by seeing if studentName[1] is an integer without the dashes (-).
+  //Ex: studentName[1] from a flex channel will be something like "12-12-2023".
   let cohortStamp = "";
+  if (/^\d+$/.test(studentName[1].split("-")?.join(""))) {
+    cohortStamp = ":muscle:";
+  }
   if (studentName[1] === "bismuth") {
     cohortStamp = ":83-bi:";
   } else if (studentName[1] === "polonium") {
@@ -163,6 +168,8 @@ const postQ = async (req, res, payload) => {
     cohortStamp = ":94-pu:";
   } else if (studentName[1] === "lawrencium") {
     cohortStamp = ":103-lr:";
+  } else if (studentName[1] === "roentgenium") {
+    cohortStamp = ":111-rg:";
   } else if (studentName[1] === "fermium") {
     cohortStamp = ":100-fm:";
   } else if (studentName.length > 2 && studentName[3] === "radon") {
@@ -290,6 +297,7 @@ const postQ = async (req, res, payload) => {
     message_ts: studentQTS,
   });
 
+  //Sends Card to Question Queue Archive channel
   try {
     let genQueue = await client.chat.postMessage({
       token: botToken.botToken,
@@ -404,13 +412,14 @@ const postQ = async (req, res, payload) => {
     console.error(error);
   }
 
+  //Sends card to Question Queue channel for instructors to see
   try {
     const channelId = instructorQueue;
     const result = await client.chat.postMessage({
       token: botToken.botToken,
       response_type: "status",
-      //! instructor channel
-      channel: "C032VJSJUNS",
+      //! If cohortStamp is the "muscle" emoji, question card will get sent to Flex Question Queue
+      channel: cohortStamp !== ":muscle:" ? "C032VJSJUNS" : "C04GQT4TP2M",
       text: `${req.chanName}`,
       blocks: [
         {
@@ -612,6 +621,27 @@ const postQ = async (req, res, payload) => {
         name: ca.message.text,
         channel: ca.channel,
         ts: ca.ts,
+      });
+      lassQueueSchema.save();
+    } else if (studentName[1] === "roentgenium") {
+      let rg = await client.chat.postMessage({
+        token: botToken.botToken,
+        channel: "C04ECE489BR",
+        text: req.chanName,
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${studentName[0]}*`,
+            },
+          },
+        ],
+      });
+      let lassQueueSchema = new classQueue({
+        name: rg.message.text,
+        channel: rg.channel,
+        ts: rg.ts,
       });
       lassQueueSchema.save();
     } else if (studentName[1] === "lawrencium") {
@@ -927,6 +957,10 @@ const completeStudentUpdates = async (data) => {
 };
 
 const removeFromQueue = async (data, messageData) => {
+  if (/^\d+$/.test(data.split("_")[1].split("-")?.join(""))) {
+    console.log("No deletion required. Question card came from Flex Student")
+    return
+  }
   let studentToDelete = await classQueue
     .find({ name: data }, function (err, obj) {
       console.log(obj);
@@ -945,6 +979,7 @@ const removeFromQueue = async (data, messageData) => {
     console.log(deleteStudent);
   } catch (error) {
     console.log(error);
+
     try {
       let errorReply = await client.chat.postMessage({
         channel: "U02JSDX1JBV",
