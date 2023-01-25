@@ -73,7 +73,7 @@ router.post("/notify", async (req, res) => {
             text: "`An error has occurred while attempting to post Q card. Please limit number of periods in text fields`",
           });
           return res.status(200).send("");
-        } 
+        }
       } catch (error) {
         console.log("Additional detail request: ", error);
       }
@@ -238,8 +238,8 @@ router.post("/notify", async (req, res) => {
 
 router.get("/auth", async (req, res) => {
   try {
-    console.log("REQUEST IN AUTH ",req);
-    console.log("CODE ",req.query.code);
+    console.log("REQUEST IN AUTH ", req);
+    console.log("CODE ", req.query.code);
 
     console.log(req);
     let authTok = await client.oauth.v2.access({
@@ -248,7 +248,7 @@ router.get("/auth", async (req, res) => {
       client_secret: botToken.client_secret,
     });
     botToken.botToken = authTok.authed_user.access_token;
-    console.log("AUTH TOKEN RESPONSE: ",authTok);
+    console.log("AUTH TOKEN RESPONSE: ", authTok);
   } catch (error) {
     console.log(error);
   }

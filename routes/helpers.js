@@ -1,5 +1,4 @@
-const slackInteractiveMessages = require("@slack/interactive-messages");
-const screenshots = require("../Images/screenshots");
+
 const {
   classQueue,
   GenQueue,
@@ -7,12 +6,13 @@ const {
   StudentUpdateQueue,
   StatTrack,
 } = require("../models/student");
-const { App } = require("@slack/bolt");
 const { WebClient, LogLevel } = require("@slack/web-api");
 const botToken = require("../keys/keys");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
+const { Client } = require("@notionhq/client");
+const notion = new Client({ auth: botToken.notionApiKey });
 const connectDB = require("../startup/db");
 const express = require("express");
 const router = express.Router();
@@ -958,8 +958,8 @@ const completeStudentUpdates = async (data) => {
 
 const removeFromQueue = async (data, messageData) => {
   if (/^\d+$/.test(data.split("_")[1].split("-")?.join(""))) {
-    console.log("No deletion required. Question card came from Flex Student")
-    return
+    console.log("No deletion required. Question card came from Flex Student");
+    return;
   }
   let studentToDelete = await classQueue
     .find({ name: data }, function (err, obj) {
@@ -1093,7 +1093,6 @@ const instructorComplete = async (data, resolver) => {
     console.log(error);
   }
 };
-
 exports.completeStudentUpdates = completeStudentUpdates;
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
