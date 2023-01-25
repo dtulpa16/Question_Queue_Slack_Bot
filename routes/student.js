@@ -9,6 +9,7 @@ const {
   instructorComplete,
   studentComplete,
   completeStudentUpdates,
+  addBotToChannel
 } = require("./helpers");
 const botToken = require("../keys/keys");
 const { StatTrack } = require("../models/student");
@@ -27,6 +28,7 @@ router.post("/", async (req, res) => {
   if (req.body.text.length > 5) {
     await screenshots.showTime(req.body.text, req.body.channel_id, res);
   } else {
+    await addBotToChannel(req.body.channel_id)
     return qCardModal(req, res);
   }
 });
@@ -252,6 +254,7 @@ router.get("/auth", async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+  
 });
 
 module.exports = router;

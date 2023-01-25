@@ -419,7 +419,8 @@ const postQ = async (req, res, payload) => {
       token: botToken.botToken,
       response_type: "status",
       //! If cohortStamp is the "muscle" emoji, question card will get sent to Flex Question Queue
-      channel: cohortStamp !== ":muscle:" ? "C032VJSJUNS" : "C04GQT4TP2M",
+      channel: cohortStamp !== ":muscle:" ? "C032VJSJUNS" : "C04L9SCGGM7",
+      // channel: cohortStamp !== ":muscle:" ? "C032VJSJUNS" : "C04GQT4TP2M",
       text: `${req.chanName}`,
       blocks: [
         {
@@ -1093,9 +1094,21 @@ const instructorComplete = async (data, resolver) => {
     console.log(error);
   }
 };
+const addBotToChannel = async (chanId) => {
+  try {
+    const result = await client.conversations.invite({
+      token: botToken.authToken,
+      channel: `${chanId}`,
+      users: `U031EDDN62Y`,
+    });
+  } catch (error) {
+    console.log("Bot already in channel");
+  }
+};
 exports.completeStudentUpdates = completeStudentUpdates;
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
 exports.postQ = postQ;
 exports.studentComplete = studentComplete;
 exports.instructorComplete = instructorComplete;
+exports.addBotToChannel = addBotToChannel;
