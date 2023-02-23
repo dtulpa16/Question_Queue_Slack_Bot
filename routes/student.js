@@ -21,7 +21,7 @@ const connectDB = require("../startup/db");
 
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
-  if (req.body.channel_name.includes("_") === false) {
+  if (req.body.channel_name.includes("_") === false || req.body.channel_name.includes("immersive") || req.body.channel_name.includes("queue")) {
     await handleUserErr(req.body.channel_id, req.body.user_id);
     return res.status(200).send("");
   }

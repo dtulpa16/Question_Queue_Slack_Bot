@@ -146,8 +146,8 @@ const postQ = async (req, res, payload) => {
   if (/^\d+$/.test(studentName[1].split("-")?.join(""))) {
     cohortStamp = ":muscle:";
   }
-  if (studentName[1] === "bismuth") {
-    cohortStamp = ":83-bi:";
+  if (studentName[1] === "oganesson") {
+    cohortStamp = ":118-og:";
   } else if (studentName[1] === "polonium") {
     cohortStamp = ":84-po:";
   } else if (studentName[1] === "seaborgium") {
@@ -581,11 +581,11 @@ const postQ = async (req, res, payload) => {
 
   //General queue
   try {
-    if (studentName[1] === "astatine") {
+    if (studentName[1] === "oganesson") {
       let at = await client.chat.postMessage({
         token: botToken.botToken,
-        //TODO ASTATINE QUEUE channel
-        channel: "C0334G1S1CL",
+        //TODO oganesson QUEUE channel
+        channel: "C04NWRCSHBR",
         text: req.chanName,
         blocks: [
           {
@@ -870,28 +870,6 @@ const postQ = async (req, res, payload) => {
         name: pu.message.text,
         channel: pu.channel,
         ts: pu.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "fermium") {
-      let fr = await client.chat.postMessage({
-        token: botToken.botToken,
-        channel: "C03SP4EGJ21",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: fr.message.text,
-        channel: fr.channel,
-        ts: fr.ts,
       });
       lassQueueSchema.save();
     } else if (studentName.length > 2 && studentName[3] === "astatine") {
