@@ -15,8 +15,13 @@ const client = new WebClient(botToken.botToken, {
 });
 const connectDB = require("../startup/db");
 
+
+/**
+ * @description Handles the submission of the /queue command
+ */
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
+  //Checks if message came from the student's channel. Ends request if not sent from valid channel
   if (
     req.body.channel_name.includes("_") === false ||
     req.body.channel_name.includes("immersive") ||
@@ -32,10 +37,15 @@ router.post("/", async (req, res) => {
     return qCardModal(req, res, client);
   }
 });
-
+/**
+ * 
+ * @param {string} chanId Channel Id where command was entered
+ * @param {string} userId ID of user who sent in the command + who will see ephemeral message
+ * @returns 200 status code which ends request
+ */
 const handleUserErr = async (chanId, userId) => {
   try {
-    // Call the chat.postEphemeral method using the WebClient
+    // Posts ephemeral message telling them they used the command in the wrong channel
     const result = await client.chat.postEphemeral({
       channel: chanId,
       user: userId,
@@ -49,7 +59,9 @@ const handleUserErr = async (chanId, userId) => {
   }
 };
 
-//Interaction handler
+/**
+ * @description Handles all Slack interactions (modal being submitted, interaction with question card)
+ */
 router.post("/notify", async (req, res) => {
   console.log("Modal sent");
   connectDB();

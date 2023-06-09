@@ -26,7 +26,6 @@ let classQueueChannels = {
 
 let studentQTS = "";
 
-
 //Handles posting question card to appropriate channels & adding database entries of message data
 const postQ = async (req, res, payload) => {
   try {
@@ -754,6 +753,7 @@ async function handleBlockActions(payload, res) {
   if (payload.actions[0].action_id == "jump2card") {
     console.log(" ");
   } else if (payload.actions[0].action_id == "resolved") {
+    //Handles student clicking "resolved" on Q card in their instructor channel
     try {
       await studentComplete(payload.actions[0].value);
       await client.reactions.add({
@@ -770,6 +770,7 @@ async function handleBlockActions(payload, res) {
     const messageId = payload.message.ts;
     const channelId = payload.channel.id;
     try {
+      //Handles deleting Q card from instructor channel when card is marked as "complete"
       const result = await client.chat.delete({
         channel: channelId,
         ts: messageId,
@@ -779,6 +780,7 @@ async function handleBlockActions(payload, res) {
       console.log(error);
     }
     try {
+      //Deletes reply to Q card in instructor channel that mentions who claimed the card
       const replyToDelete = await client.chat.delete({
         channel: channelId,
         ts: payload.message.latest_reply,
@@ -788,6 +790,7 @@ async function handleBlockActions(payload, res) {
       console.log(error);
     }
     try {
+      //!Handles marking appropriate messages with emojis to signify completion of Q Card
       await instructorComplete(payload.message.text, payload.user.name);
     } catch (error) {
       console.log(error);
@@ -796,7 +799,8 @@ async function handleBlockActions(payload, res) {
       );
     }
     try {
-      let queueRemoval = await removeFromQueue(payload.message.text, {
+      //Handles removing students name from their class queue
+      await removeFromQueue(payload.message.text, {
         ts: payload.message.ts,
         user: payload.user.id,
       });
@@ -811,10 +815,13 @@ async function handleBlockActions(payload, res) {
 
 // Function to handle "view_submission" type payloads (modal submission)
 async function handleViewSubmission(payload, res) {
+  //Extracts data from the fourth block element.
   let channelData = payload.view.blocks[4].elements[0].text.split(" ");
+  // postChan - id is the student's instructor channel ID. chanName - name of students channel
   let postChan = { id: channelData[1], chanName: channelData[0] };
 
   try {
+    //Checks if student used a bunch of periods to meet minimum required characters 
     if (
       payload.view.state.values[1].my_action.value.includes(".........") ||
       payload.view.state.values[2].my_action.value.includes("......")
@@ -829,6 +836,7 @@ async function handleViewSubmission(payload, res) {
     console.log("Additional detail request: ", error);
   }
 
+  //! Handles the posting of Q card to student channel, Instructor channel, & archive channel
   if (postChan.chanName.includes("_")) {
     await postQ(postChan, res, payload);
   }
