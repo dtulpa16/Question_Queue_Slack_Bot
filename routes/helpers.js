@@ -1,4 +1,3 @@
-
 const {
   classQueue,
   GenQueue,
@@ -11,11 +10,7 @@ const botToken = require("../keys/keys");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
-const { Client } = require("@notionhq/client");
-const notion = new Client({ auth: botToken.notionApiKey });
 const connectDB = require("../startup/db");
-const express = require("express");
-const router = express.Router();
 const instructorQueue = "C0314K9LXQS";
 let studentQTS = "";
 
@@ -148,41 +143,16 @@ const postQ = async (req, res, payload) => {
   }
   if (studentName[1] === "oganesson") {
     cohortStamp = ":118-og:";
-  } else if (studentName[1] === "polonium") {
-    cohortStamp = ":84-po:";
+  } else if (studentName[1] === "apus") {
+    cohortStamp = ":stars:";
   } else if (studentName[1] === "seaborgium") {
     cohortStamp = ":106-sq:";
-  } else if (studentName[1] === "astatine") {
-    cohortStamp = ":85-at:";
-  } else if (studentName[1] === "radon") {
-    cohortStamp = ":86-rn:";
   } else if (studentName[1] === "francium") {
     cohortStamp = ":87-fr:";
-  } else if (studentName[1] === "actinium") {
-    cohortStamp = ":89-ac:";
-  } else if (studentName[1] === "radium") {
-    cohortStamp = ":88-ra:";
-  } else if (studentName[1] === "uranium") {
-    cohortStamp = ":92-u:";
   } else if (studentName[1] === "plutonium") {
     cohortStamp = ":94-pu:";
-  } else if (studentName[1] === "lawrencium") {
-    cohortStamp = ":103-lr:";
-  } else if (studentName[1] === "roentgenium") {
-    cohortStamp = ":111-rg:";
-  } else if (studentName[1] === "fermium") {
-    cohortStamp = ":100-fm:";
-  } else if (studentName.length > 2 && studentName[3] === "radon") {
-  } else if (studentName[1] === "californium") {
-    cohortStamp = ":surfer:";
-  } else if (studentName.length > 2 && studentName[3] === "radon") {
-    cohortStamp = ":spider_web: :86-rn:";
-  } else if (studentName.length > 2 && studentName[3] === "astatine") {
-    cohortStamp = ":spider_web: :85-at:";
-  } else if (studentName.length > 2 && studentName[3] === "radon") {
-    cohortStamp = ":spider_web: :86-rn:";
-  } else if (studentName.length > 2 && studentName[3] === "radon") {
-    cohortStamp = ":spider_web: :86-rn:";
+  } else if (studentName[1] === "aries") {
+    cohortStamp = ":ram:";
   }
 
   try {
@@ -603,10 +573,10 @@ const postQ = async (req, res, payload) => {
         ts: at.ts,
       });
       lassQueueSchema.save();
-    } else if (studentName[1] === "californium") {
-      let ca = await client.chat.postMessage({
+    } else if (studentName[1] === "aries") {
+      let ar = await client.chat.postMessage({
         token: botToken.botToken,
-        channel: "C03T7MVHL1W",
+        channel: "C058YG3G144",
         text: req.chanName,
         blocks: [
           {
@@ -619,15 +589,15 @@ const postQ = async (req, res, payload) => {
         ],
       });
       let lassQueueSchema = new classQueue({
-        name: ca.message.text,
-        channel: ca.channel,
-        ts: ca.ts,
+        name: ar.message.text,
+        channel: ar.channel,
+        ts: ar.ts,
       });
       lassQueueSchema.save();
-    } else if (studentName[1] === "roentgenium") {
-      let rg = await client.chat.postMessage({
+    } else if (studentName[1] === "apus") {
+      let ap = await client.chat.postMessage({
         token: botToken.botToken,
-        channel: "C04ECE489BR",
+        channel: "C050ETWCUR1",
         text: req.chanName,
         blocks: [
           {
@@ -640,145 +610,9 @@ const postQ = async (req, res, payload) => {
         ],
       });
       let lassQueueSchema = new classQueue({
-        name: rg.message.text,
-        channel: rg.channel,
-        ts: rg.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "lawrencium") {
-      let lr = await client.chat.postMessage({
-        token: botToken.botToken,
-        channel: "C042D9MA5M0",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-      let lassQueueSchema = new classQueue({
-        name: lr.message.text,
-        channel: lr.channel,
-        ts: lr.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "polonium") {
-      let po = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO POLONIUM QUEUE channel
-        channel: "C032MKG3KP1",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: po.message.text,
-        channel: po.channel,
-        ts: po.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "bismuth") {
-      let bi = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO BISMUTH QUEUE channel
-        channel: "C032MK92EJ3",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: bi.message.text,
-        channel: bi.channel,
-        ts: bi.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "radon") {
-      let rn = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO RADON QUEUE channel
-        channel: "C034LGPMG5N",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: rn.message.text,
-        channel: rn.channel,
-        ts: rn.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "francium") {
-      let fr = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO RADON QUEUE channel
-        channel: "C036UQELF51",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: fr.message.text,
-        channel: fr.channel,
-        ts: fr.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "actinium") {
-      let ac = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO RADON QUEUE channel
-        channel: "C038ELW0KU7",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: ac.message.text,
-        channel: ac.channel,
-        ts: ac.ts,
+        name: ap.message.text,
+        channel: ap.channel,
+        ts: ap.ts,
       });
       lassQueueSchema.save();
     } else if (studentName[1] === "seaborgium") {
@@ -804,120 +638,7 @@ const postQ = async (req, res, payload) => {
         ts: sg.ts,
       });
       lassQueueSchema.save();
-    } else if (studentName[1] === "radium") {
-      let ra = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO RADON QUEUE channel
-        channel: "C0397TEJPG9",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: ra.message.text,
-        channel: ra.channel,
-        ts: ra.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "uranium") {
-      let ur = await client.chat.postMessage({
-        token: botToken.botToken,
-        //TODO Uranium QUEUE channel
-        channel: "C03EB98UECD",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: ur.message.text,
-        channel: ur.channel,
-        ts: ur.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName[1] === "plutonium") {
-      let pu = await client.chat.postMessage({
-        token: botToken.botToken,
-        channel: "C03MZH2UUNL",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: pu.message.text,
-        channel: pu.channel,
-        ts: pu.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName.length > 2 && studentName[3] === "astatine") {
-      let wda = await client.chat.postMessage({
-        token: botToken.botToken,
-        channel: "C033WQ66J2E",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: wda.message.text,
-        channel: wda.channel,
-        ts: wda.ts,
-      });
-      lassQueueSchema.save();
-    } else if (studentName.length > 2 && studentName[3] === "radon") {
-      let wdr = await client.chat.postMessage({
-        token: botToken.botToken,
-        channel: "C033TT0RCBF",
-        text: req.chanName,
-        blocks: [
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `*${studentName[0]}*`,
-            },
-          },
-        ],
-      });
-
-      let lassQueueSchema = new classQueue({
-        name: wdr.message.text,
-        channel: wdr.channel,
-        ts: wdr.ts,
-      });
-      lassQueueSchema.save();
-    }
-
+    } 
     console.log("");
   } catch (error) {
     console.error(error);
@@ -1059,7 +780,6 @@ const instructorComplete = async (data, resolver) => {
         console.log(obj);
       }
     ).clone();
-    console.log("query return for student update query: ", updateToUpdate);
     let updateZoomStatus = await client.reactions.add({
       response_type: "status",
       channel: updateToUpdate[0].channel,
@@ -1067,7 +787,6 @@ const instructorComplete = async (data, resolver) => {
       timestamp: updateToUpdate[0].ts,
     });
     await StudentUpdateQueue.deleteOne({ name: data });
-    console.log(updateZoomStatus);
   } catch (error) {
     console.log(error);
   }
@@ -1083,6 +802,179 @@ const addBotToChannel = async (chanId) => {
     console.log("Bot already in channel");
   }
 };
+
+// Function to handle "interactive_message" type payloads
+async function handleInteractiveMessage(payload, res, chosenFile) {
+  if (payload.actions[0].name === "zoom") {
+    try {
+      //TODO Student Updates Channel
+      let updatePost = await client.chat.postMessage({
+        response_type: "status",
+        channel: "GNE49MV4M",
+        text: payload.user.name + " // " + payload.original_message.text,
+      });
+      await completeStudentUpdates(updatePost);
+      await client.reactions.add({
+        channel: payload.channel.id,
+        name: "heavy_check_mark",
+        timestamp: payload.message_ts,
+      });
+      await client.chat.postMessage({
+        channel: payload.actions[0].value,
+        text: ":heavy_check_mark:",
+      });
+      return res.status(200).send("");
+    } catch (error) {
+      console.log(error);
+    }
+  } else if (payload.actions[0].name === "slack") {
+    try {
+      let inOnSlack = await client.chat.postMessage({
+        channel: payload.actions[0].value,
+        text: "Taking a look! :eyes:",
+      });
+      await client.reactions.add({
+        channel: payload.channel.id,
+        name: "eyes",
+        timestamp: payload.message_ts,
+      });
+      //Reply to message with instructor who is in on slack
+      let replyThread = await client.chat.postMessage({
+        channel: payload.channel.id,
+        thread_ts: payload.original_message.ts,
+        text: `${payload.user.name} in on slack`,
+      });
+      console.log("REPLY THREAD: ", replyThread);
+      return res.status(200).send("");
+    } catch (error) {
+      console.log(error);
+    }
+  } else if (payload.actions[0].name === "resolved") {
+    try {
+      let studentCompletion = await client.reactions.add({
+        channel: payload.channel.id,
+        name: "white_check_mark",
+        timestamp: payload.message_ts,
+      });
+      console.log(studentCompletion);
+      return res.status(200).send("");
+    } catch (error) {
+      console.log(error);
+    }
+    await studentComplete(payload.actions[0].value);
+  } else if (payload.actions[0].name === "screenshot") {
+    try {
+      let screenshotRequest = await client.chat.postMessage({
+        response_type: "status",
+        channel: payload.actions[0].value,
+        blocks: [
+          {
+            type: "image",
+            title: {
+              type: "plain_text",
+              text: "Screenshots please:)",
+              emoji: true,
+            },
+            image_url: chosenFile,
+            alt_text: "screenshots please:)",
+          },
+        ],
+      });
+      console.log(screenshotRequest);
+      return res.status(200).send("");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+// Function to handle "block_actions" type payloads (instructors interacting with Q Cards)
+async function handleBlockActions(payload, res) {
+  if (payload.actions[0].action_id == "jump2card") {
+    console.log(" ");
+  } else if (payload.actions[0].action_id == "resolved") {
+    try {
+      await studentComplete(payload.actions[0].value);
+      await client.reactions.add({
+        channel: payload.channel.id,
+        name: "white_check_mark",
+        timestamp: payload.message.ts,
+      });
+
+      return res.status(200).send("");
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    const messageId = payload.message.ts;
+    const channelId = payload.channel.id;
+    try {
+      const result = await client.chat.delete({
+        channel: channelId,
+        ts: messageId,
+      });
+      console.log("Message deleted from Instructor queue", result);
+    } catch (error) {
+      console.log(error);
+    }
+    try {
+      const replyToDelete = await client.chat.delete({
+        channel: channelId,
+        ts: payload.message.latest_reply,
+      });
+      console.log("Reply deleted from Instructor queue", replyToDelete);
+    } catch (error) {
+      console.log(error);
+    }
+    try {
+      await instructorComplete(payload.message.text, payload.user.name);
+    } catch (error) {
+      console.log(error);
+      console.log(
+        "Error occurred trying to mark card as complete in archive channel. Error note added 16FEB22"
+      );
+    }
+    try {
+      let queueRemoval = await removeFromQueue(payload.message.text, {
+        ts: payload.message.ts,
+        user: payload.user.id,
+      });
+      console.log(queueRemoval);
+    } catch (error) {
+      console.log(error);
+      console.log(
+        "Error occurred trying to remove student from queue. Error note added 16FEB22"
+      );
+    }
+  }
+}
+
+// Function to handle "view_submission" type payloads (modal submission)
+async function handleViewSubmission(payload, res) {
+  let channelData = payload.view.blocks[4].elements[0].text.split(" ");
+  let postChan = { id: channelData[1], chanName: channelData[0] };
+
+  try {
+    if (
+      payload.view.state.values[1].my_action.value.includes(".........") ||
+      payload.view.state.values[2].my_action.value.includes("......")
+    ) {
+      await client.chat.postMessage({
+        channel: postChan.id,
+        text: "`An error has occurred while attempting to post Q card. Please limit number of periods in text fields`",
+      });
+      return res.status(200).send("");
+    }
+  } catch (error) {
+    console.log("Additional detail request: ", error);
+  }
+
+  if (postChan.chanName.includes("_")) {
+    await postQ(postChan, res, payload);
+  }
+
+  return res.status(200).send("");
+}
 exports.completeStudentUpdates = completeStudentUpdates;
 exports.removeFromQueue = removeFromQueue;
 exports.qCardModal = qCardModal;
@@ -1090,3 +982,6 @@ exports.postQ = postQ;
 exports.studentComplete = studentComplete;
 exports.instructorComplete = instructorComplete;
 exports.addBotToChannel = addBotToChannel;
+exports.handleViewSubmission = handleViewSubmission;
+exports.handleBlockActions = handleBlockActions;
+exports.handleInteractiveMessage = handleInteractiveMessage;
