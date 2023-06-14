@@ -90,9 +90,9 @@ const createDatabaseEntry = async (
     Item: {
       student_name: cohortQueueMsgData.message.text,
       //Channel Id of the student's cohort question queue
-      cohort_queue_channel_id: cohortQueueMsgData.channel,
+      cohort_queue_channel_id: cohortQueueMsgData.channel ? cohortQueueMsgData.channel : "N/a",
       //Timestamp of message sent to their cohort question queue. Used for removing name from queue
-      cohort_queue_msg_ts: cohortQueueMsgData.ts,
+      cohort_queue_msg_ts: cohortQueueMsgData.ts ? cohortQueueMsgData.ts : "N/a",
       //Channel Id of the question queue archive channel
       question_queue_archive_channel_id: questionQueueArchiveData.channel,
       //Timestamp of question card sent to the question queue archive channel. Used for marking it as complete + Adding a reply of who completed the card.
