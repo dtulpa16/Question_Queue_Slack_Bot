@@ -7,6 +7,7 @@ const {
 } = require("../../models/student");
 const { WebClient, LogLevel } = require("@slack/web-api");
 const botToken = require("../../keys/keys");
+const { dynamoDb } = require("../../startup/db");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
@@ -50,14 +51,62 @@ const postQ = async (req, res, payload) => {
   });
 
   //Sends Card to Question Queue Archive channel & saves message data to be used when an instructor marks a card as "Complete"
-  await sendQCardToArchiveChannel(req, payload, cohortStamp, cardLink, res);
+  let questionQueueArchiveData = await sendQCardToArchiveChannel(
+    req,
+    payload,
+    cohortStamp,
+    cardLink,
+    res
+  );
 
   //Sends card to Question Queue channel for instructors to see
   await sendQCardToInstructorChannel(req, res, cohortStamp, cardLink, payload);
 
   //Adds studentName to their class queue channel
   let queueChannelId = classQueueChannels[studentName[1]];
-  await postToClassQueue(req, res, queueChannelId, studentName);
+  let cohortQueueMsgData = await postToClassQueue(
+    req,
+    res,
+    queueChannelId,
+    studentName
+  );
+  //Creates database entry with message data of the card sent to the archive channel as well as the students' cohort queue
+  //Message data is used for deleting students' names from queue + adding emojis to messages (in on zoom, card being completed, etc...)
+  await createDatabaseEntry(questionQueueArchiveData, cohortQueueMsgData);
+};
+
+const createDatabaseEntry = async (
+  questionQueueArchiveData,
+  cohortQueueMsgData
+) => {
+  console.log(
+    "Question queue archive data: ",
+    questionQueueArchiveData,
+    "cohort queue data: ",
+    cohortQueueMsgData
+  );
+  var params = {
+    TableName: "QuestionCardQueue",
+    Item: {
+      student_name: cohortQueueMsgData.message.text,
+      //Channel Id of the student's cohort question queue
+      cohort_queue_channel_id: cohortQueueMsgData.channel,
+      //Timestamp of message sent to their cohort question queue. Used for removing name from queue
+      cohort_queue_msg_ts: cohortQueueMsgData.ts,
+      //Channel Id of the question queue archive channel
+      question_queue_archive_channel_id: questionQueueArchiveData.channel,
+      //Timestamp of question card sent to the question queue archive channel. Used for marking it as complete + Adding a reply of who completed the card.
+      question_queue_archive_msg_ts: questionQueueArchiveData.ts,
+    },
+  };
+  dynamoDb.put(params, (err, data) => {
+    if (err) {
+      console.error("Unable to add item.");
+      console.error("Error JSON:", JSON.stringify(err, null, 2));
+    } else {
+      console.log("Added item:", JSON.stringify(data, null, 2));
+    }
+  });
 };
 const getQCardCohortEmoji = async (req, res) => {
   let studentName = req.chanName.split("_");
@@ -83,13 +132,33 @@ const getQCardCohortEmoji = async (req, res) => {
 };
 const completeStudentUpdates = async (data) => {
   let name = data.message.text.split(" // ");
+  console.log("Data inside of completeStudentUpdates: ", data)
+  try {
+    const params = {
+      TableName: "QuestionCardQueue",
+      Key: { student_name: name[1] },
+      UpdateExpression:
+        "set student_update_channel_id = :channel_id, student_update_msg_ts = :message_ts",
+      ExpressionAttributeValues: {
+        ":channel_id": data.channel,
+        ":message_ts": data.ts,
+      },
+      ReturnValues: "UPDATED_NEW",
+    };
 
-  let tudentUpdateQueue = new StudentUpdateQueue({
-    name: name[1],
-    channel: data.channel,
-    ts: data.ts,
-  });
-  tudentUpdateQueue.save();
+    await dynamoDb.update(params, function (err, data) {
+      if (err) {
+        console.error(
+          "Unable to update item. Error:",
+          JSON.stringify(err, null, 2)
+        );
+      } else {
+        console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+      }
+    }).promise();
+  } catch (er) {
+    console.log(er);
+  }
 };
 
 const removeFromQueue = async (data, messageData) => {
@@ -97,20 +166,16 @@ const removeFromQueue = async (data, messageData) => {
     console.log("No deletion required. Question card came from Flex Student");
     return;
   }
-  let studentToDelete = await classQueue
-    .find({ name: data }, function (err, obj) {
-      console.log(obj);
-    })
-    .clone();
 
+  let studentToDelete = await getDbEntryByStudentName(data);
   console.log(
     "Query return in function that removes student from their class queue: ",
     studentToDelete
   );
   try {
     let deleteStudent = await client.chat.delete({
-      channel: studentToDelete[0].channel,
-      ts: studentToDelete[0].ts,
+      channel: studentToDelete[0].cohort_queue_channel_id,
+      ts: studentToDelete[0].cohort_queue_msg_ts,
     });
     console.log(deleteStudent);
   } catch (error) {
@@ -126,7 +191,8 @@ const removeFromQueue = async (data, messageData) => {
       console.log(error);
     }
   }
-  await classQueue.deleteOne({ name: data });
+  await deleteDbEntryByStudentName(data);
+  // await classQueue.deleteOne({ name: data });
 };
 
 const studentComplete = async (data) => {
@@ -345,11 +411,11 @@ const sendQCardToArchiveChannel = async (
   res
 ) => {
   try {
+    let archiveChannelId = "C0334J191KN";
     let genQueue = await client.chat.postMessage({
       token: botToken.botToken,
       text: req.chanName,
-      //TODO GEN queue channel
-      channel: "C0334J191KN",
+      channel: archiveChannelId,
       attachments: [
         {
           blocks: [
@@ -440,20 +506,8 @@ const sendQCardToArchiveChannel = async (
       ],
     });
 
-    let enQueue = new GenQueue({
-      name: genQueue.message.text,
-      channel: genQueue.channel,
-      ts: genQueue.ts,
-    });
-    enQueue.save();
-    let nstructorQueue = new InstructorQueue({
-      name: genQueue.message.text,
-      channel: genQueue.channel,
-      ts: genQueue.ts,
-    });
-    nstructorQueue.save();
-
     console.log("Gen queue", genQueue);
+    return genQueue;
   } catch (error) {
     console.error(error);
   }
@@ -533,21 +587,6 @@ const sendQCardToStudentChannel = async (req, payload) => {
                 emoji: true,
               },
             },
-            {
-              type: "actions",
-              elements: [
-                {
-                  type: "button",
-                  text: {
-                    type: "plain_text",
-                    text: "Resolved",
-                    emoji: true,
-                  },
-                  value: req.chanName,
-                  action_id: "resolved",
-                },
-              ],
-            },
           ],
         },
       ],
@@ -566,12 +605,7 @@ const sendQCardToStudentChannel = async (req, payload) => {
 };
 
 const instructorComplete = async (data, resolver) => {
-  let cardTocomplete = await InstructorQueue.find(
-    { name: data },
-    function (err, obj) {
-      console.log(obj);
-    }
-  ).clone();
+  let cardTocomplete = await getDbEntryByStudentName(data);
   console.log(
     "query return in function that marks card as complete in archive(instructor resolution): ",
     cardTocomplete
@@ -580,9 +614,9 @@ const instructorComplete = async (data, resolver) => {
   try {
     let archiveMark = await client.reactions.add({
       response_type: "status",
-      channel: cardTocomplete[0].channel,
+      channel: cardTocomplete[0].question_queue_archive_channel_id,
       name: "ballot_box_with_check",
-      timestamp: cardTocomplete[0].ts,
+      timestamp: cardTocomplete[0].question_queue_archive_msg_ts,
     });
     console.log(archiveMark);
   } catch (error) {
@@ -591,8 +625,8 @@ const instructorComplete = async (data, resolver) => {
   try {
     let instructorResolution = await client.chat.postMessage({
       response_type: "status",
-      channel: cardTocomplete[0].channel,
-      thread_ts: cardTocomplete[0].ts,
+      channel: cardTocomplete[0].question_queue_archive_channel_id,
+      thread_ts: cardTocomplete[0].question_queue_archive_msg_ts,
       text: `Resolved from instructor channel by ${resolver}`,
     });
     console.log(instructorResolution);
@@ -608,26 +642,62 @@ const instructorComplete = async (data, resolver) => {
       console.log(error);
     }
   }
-  await InstructorQueue.deleteOne({ name: data });
-  try {
-    let updateToUpdate = await StudentUpdateQueue.find(
-      { name: data },
-      function (err, obj) {
-        console.log(obj);
-      }
-    ).clone();
-    let updateZoomStatus = await client.reactions.add({
-      response_type: "status",
-      channel: updateToUpdate[0].channel,
-      name: "back",
-      timestamp: updateToUpdate[0].ts,
-    });
-    await StudentUpdateQueue.deleteOne({ name: data });
-  } catch (error) {
-    console.log(error);
-  }
-};
 
+  // await InstructorQueue.deleteOne({ name: data });
+  if (cardTocomplete[0]?.hasOwnProperty("student_update_channel_id")) {
+    try {
+      let updateZoomStatus = await client.reactions.add({
+        response_type: "status",
+        channel: cardTocomplete[0].student_update_channel_id,
+        name: "back",
+        timestamp: cardTocomplete[0].student_update_msg_ts,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    console.log(false);
+  }
+  // await deleteDbEntryByStudentName(data)
+
+  // await StudentUpdateQueue.deleteOne({ name: data });
+};
+const deleteDbEntryByStudentName = async (name) => {
+  const studentToDelete = {
+    // The name of the DynamoDB table
+    TableName: "QuestionCardQueue",
+    // The primary key of the item to delete
+    Key: { student_name: name },
+  };
+
+  // Delete the item from the DynamoDB table. This returns a Promise and is an asynchronous operation.
+  await dynamoDb
+    .delete(studentToDelete, function (err, data) {
+      if (err) console.log(err);
+      // If there is no error, log the result of the delete operation
+      else console.log(data);
+    })
+    .promise(); // The .promise() method turns the callback-based method into a Promise-based one
+};
+const getDbEntryByStudentName = async (name) => {
+  const studentToDelete = {
+    // The name of the DynamoDB table
+    TableName: "QuestionCardQueue",
+    // The primary key of the item to get
+    Key: { student_name: name },
+  };
+
+  let response = await dynamoDb
+    .get(studentToDelete, function (err, data) {
+      if (err) console.log(err);
+      // If there is no error, log the result of the get operation
+      else console.log(data);
+    })
+    .promise();
+  console.log(response.Item);
+  // studentToDelete = [response.Item]
+  return [response.Item];
+};
 const addBotToChannel = async (chanId) => {
   try {
     const result = await client.conversations.invite({
@@ -639,6 +709,7 @@ const addBotToChannel = async (chanId) => {
     console.log("Bot already in channel");
   }
 };
+
 const postToClassQueue = async (req, res, channelId, studentName) => {
   let response = await client.chat.postMessage({
     token: botToken.botToken,
@@ -655,13 +726,14 @@ const postToClassQueue = async (req, res, channelId, studentName) => {
     ],
   });
 
-  let classQueueSchema = new classQueue({
-    name: response.message.text,
-    channel: response.channel,
-    ts: response.ts,
-  });
+  // let classQueueSchema = new classQueue({
+  //   name: response.message.text,
+  //   channel: response.channel,
+  //   ts: response.ts,
+  // });
 
-  classQueueSchema.save();
+  // classQueueSchema.save();
+  return response;
 };
 // Function to handle "interactive_message" type payloads
 async function handleInteractiveMessage(payload, res, chosenFile) {
@@ -795,7 +867,7 @@ async function handleBlockActions(payload, res) {
     } catch (error) {
       console.log(error);
       console.log(
-        "Error occurred trying to mark card as complete in archive channel. Error note added 16FEB22"
+        "Error occurred trying to mark card as complete in archive channel"
       );
     }
     try {
@@ -806,9 +878,7 @@ async function handleBlockActions(payload, res) {
       });
     } catch (error) {
       console.log(error);
-      console.log(
-        "Error occurred trying to remove student from queue. Error note added 16FEB22"
-      );
+      console.log("Error occurred trying to remove student from queue");
     }
   }
 }
@@ -821,7 +891,7 @@ async function handleViewSubmission(payload, res) {
   let postChan = { id: channelData[1], chanName: channelData[0] };
 
   try {
-    //Checks if student used a bunch of periods to meet minimum required characters 
+    //Checks if student used a bunch of periods to meet minimum required characters
     if (
       payload.view.state.values[1].my_action.value.includes(".........") ||
       payload.view.state.values[2].my_action.value.includes("......")

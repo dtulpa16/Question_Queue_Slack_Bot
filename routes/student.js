@@ -13,8 +13,7 @@ const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
-const connectDB = require("../startup/db");
-
+const { connectDB, dynamoDb } = require("../startup/db");
 
 /**
  * @description Handles the submission of the /queue command
@@ -38,7 +37,7 @@ router.post("/", async (req, res) => {
   }
 });
 /**
- * 
+ *
  * @param {string} chanId Channel Id where command was entered
  * @param {string} userId ID of user who sent in the command + who will see ephemeral message
  * @returns 200 status code which ends request
@@ -74,6 +73,7 @@ router.post("/notify", async (req, res) => {
     console.log("payload ", payload);
     if (payload.type === "view_submission") {
       await handleViewSubmission(payload, res);
+      return res.status(200).send("");
     } else if (payload.type === "interactive_message") {
       await handleInteractiveMessage(payload, res, chosenFile);
     } else if (payload.type === "block_actions") {
