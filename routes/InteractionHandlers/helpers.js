@@ -29,14 +29,30 @@ let studentQTS = "";
 
 //Handles posting question card to appropriate channels & adding database entries of message data
 const postQ = async (req, res, payload) => {
-  try {
-    let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
-    incrementTest.QCardSent++;
-    incrementTest.save();
-  } catch (error) {
-    console.log("QCard Sent Error (Mongo)", error);
-  }
-
+  // try {
+  //   let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
+  //   incrementTest.QCardSent++;
+  //   incrementTest.save();
+  // } catch (error) {
+  //   console.log("QCard Sent Error (Mongo)", error);
+  // }
+  const paramsOpen = {
+    TableName: "QuestionCardQueue",
+    Key: { "student_name": "question_card_stat_tracker" },
+    UpdateExpression: "set QCardSent = QCardSent + :val",
+    ExpressionAttributeValues: {
+      ":val": 1
+    },
+    ReturnValues: "UPDATED_NEW"
+  };
+  
+  await dynamoDb.update(paramsOpen, function(err, data) {
+    if (err) {
+      console.error("Unable to update item. Error:", JSON.stringify(err, null, 2));
+    } else {
+      console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+    }
+  }).promise();
   //Check if question card came from from a flex channel by seeing if studentName[1] is an integer without the dashes (-).
   //Ex: studentName[1] from a flex channel will be something like "12-12-2023".
   let { cohortStamp, studentName } = await getQCardCohortEmoji(req, res);

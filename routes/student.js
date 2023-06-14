@@ -13,7 +13,7 @@ const { WebClient, LogLevel } = require("@slack/web-api");
 const client = new WebClient(botToken.botToken, {
   logLevel: LogLevel.DEBUG,
 });
-const { connectDB, dynamoDb } = require("../startup/db");
+const { connectDB } = require("../startup/db");
 
 /**
  * @description Handles the submission of the /queue command

@@ -3,10 +3,27 @@ const { StatTrack } = require("../../models/student");
 const { connectDB, dynamoDb } = require("../../startup/db");
 
 const qCardModal = async (data, res, client) => {
-  connectDB();
-  let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
-  incrementTest.QCardOpen++;
-  incrementTest.save();
+  // connectDB();
+  // let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
+  // incrementTest.QCardOpen++;
+  // incrementTest.save();
+  const paramsOpen = {
+    TableName: "QuestionCardQueue",
+    Key: { "student_name": "question_card_stat_tracker" },
+    UpdateExpression: "set QCardOpen = QCardOpen + :val",
+    ExpressionAttributeValues: {
+      ":val": 1
+    },
+    ReturnValues: "UPDATED_NEW"
+  };
+  
+  await dynamoDb.update(paramsOpen, function(err, data) {
+    if (err) {
+      console.error("Unable to update item. Error:", JSON.stringify(err, null, 2));
+    } else {
+      console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+    }
+  }).promise();
   try {
     // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
