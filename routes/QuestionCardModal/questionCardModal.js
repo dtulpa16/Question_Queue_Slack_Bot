@@ -3,10 +3,6 @@ const { StatTrack } = require("../../models/student");
 const { connectDB, dynamoDb } = require("../../startup/db");
 
 const qCardModal = async (data, res, client) => {
-  // connectDB();
-  // let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
-  // incrementTest.QCardOpen++;
-  // incrementTest.save();
   const paramsOpen = {
     TableName: "QuestionCardQueue",
     Key: { "student_name": "question_card_stat_tracker" },

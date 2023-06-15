@@ -29,13 +29,6 @@ let studentQTS = "";
 
 //Handles posting question card to appropriate channels & adding database entries of message data
 const postQ = async (req, res, payload) => {
-  // try {
-  //   let incrementTest = await StatTrack.findById("6226593c04cb291c5cda53a5");
-  //   incrementTest.QCardSent++;
-  //   incrementTest.save();
-  // } catch (error) {
-  //   console.log("QCard Sent Error (Mongo)", error);
-  // }
   const paramsOpen = {
     TableName: "QuestionCardQueue",
     Key: { "student_name": "question_card_stat_tracker" },
