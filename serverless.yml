@@ -5,6 +5,11 @@ provider:
   stage: dev
   region: us-east-1
   memorySize: 128
+  environment:
+    AUTH_USER_TOKEN: ${env:AUTH_USER_TOKEN}
+    SLACK_BOT_CLIENT_ID: ${env:SLACK_BOT_CLIENT_ID}
+    SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+    SLACK_CLIENT_SECRET_KEY: ${env:SLACK_CLIENT_SECRET_KEY}
 functions:
   app:
     handler: app/app.handler

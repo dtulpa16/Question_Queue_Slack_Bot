@@ -1,6 +1,4 @@
-const { StatTrack } = require("../../models/student");
-
-const { connectDB, dynamoDb } = require("../../startup/db");
+const { dynamoDb } = require("../../startup/db");
 
 const qCardModal = async (data, res, client) => {
   const paramsOpen = {

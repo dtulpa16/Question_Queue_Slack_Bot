@@ -8,12 +8,11 @@ const {
   handleBlockActions,
   handleViewSubmission,
 } = require("./InteractionHandlers/helpers");
-const botToken = require("../keys/keys");
 const { WebClient, LogLevel } = require("@slack/web-api");
-const client = new WebClient(botToken.botToken, {
+const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
   logLevel: LogLevel.DEBUG,
 });
-const { connectDB } = require("../startup/db");
+
 
 /**
  * @description Handles the submission of the /queue command
@@ -30,7 +29,7 @@ router.post("/", async (req, res) => {
     return res.status(200).send("");
   }
   if (req.body.text.length > 5) {
-    await screenshots.showTime(req.body.text, req.body.channel_id, res);
+    await screenshots.showTime(req.body.text, req.body.channel_id, res, client);
   } else {
     await addBotToChannel(req.body.channel_id);
     return qCardModal(req, res, client);
@@ -63,7 +62,7 @@ const handleUserErr = async (chanId, userId) => {
  */
 router.post("/notify", async (req, res) => {
   console.log("Modal sent");
-  connectDB();
+
   let chosenFile =
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
@@ -93,10 +92,10 @@ router.get("/auth", async (req, res) => {
     console.log(req);
     let authTok = await client.oauth.v2.access({
       code: req.query.code,
-      client_id: botToken.clientId,
-      client_secret: botToken.client_secret,
+      client_id: process.env.SLACK_BOT_CLIENT_ID,
+      client_secret: process.env.SLACK_CLIENT_SECRET_KEY,
     });
-    botToken.botToken = authTok.authed_user.access_token;
+    let authedUser = authTok.authed_user.access_token;
     console.log("AUTH TOKEN RESPONSE: ", authTok);
   } catch (error) {
     console.log(error);
