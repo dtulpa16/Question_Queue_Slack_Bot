@@ -1,4 +1,3 @@
-
 const { WebClient, LogLevel } = require("@slack/web-api");
 const { dynamoDb } = require("../../startup/db");
 const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
@@ -22,7 +21,7 @@ let studentQTS = "";
 
 //Handles posting question card to appropriate channels & adding database entries of message data
 const postQ = async (req, res, payload) => {
-  //Params used for DynamoDB op for incrementing the "Question card sent" stat tracker 
+  //Params used for DynamoDB op for incrementing the "Question card sent" stat tracker
   const paramsOpen = {
     TableName: "QuestionCardQueue",
     Key: { student_name: "question_card_stat_tracker" },
@@ -85,6 +84,7 @@ const postQ = async (req, res, payload) => {
   await createDatabaseEntry(questionQueueArchiveData, cohortQueueMsgData);
 };
 
+//Takes message data of message sent to their cohort queue + the archive channel and creates a database entry that will be used to remove students name from queue + mark archived card
 const createDatabaseEntry = async (
   questionQueueArchiveData,
   cohortQueueMsgData
@@ -104,7 +104,8 @@ const createDatabaseEntry = async (
       //Timestamp of message sent to their cohort question queue. Used for removing name from queue
       cohort_queue_msg_ts: cohortQueueMsgData.ts || "N/a",
       //Channel Id of the question queue archive channel
-      question_queue_archive_channel_id: questionQueueArchiveData.channel || "C0334J191KN",
+      question_queue_archive_channel_id:
+        questionQueueArchiveData.channel || "C0334J191KN",
       //Timestamp of question card sent to the question queue archive channel. Used for marking it as complete + Adding a reply of who completed the card.
       question_queue_archive_msg_ts: questionQueueArchiveData.ts,
     },
@@ -119,6 +120,7 @@ const createDatabaseEntry = async (
     }
   });
 };
+//Gets emoji that will be attached to the question card that is sent to the instructor queue channel
 const getQCardCohortEmoji = async (req, res) => {
   let studentName = req.chanName.split("_");
 
@@ -141,6 +143,8 @@ const getQCardCohortEmoji = async (req, res) => {
     return { cohortStamp: ":qq:", studentName: studentName };
   }
 };
+//Handles updating db entry of student when an instructor clicks "In on Zoom". The message_ts & channel_id of the message sent to student_updates
+//is used to later mark the message appropriately when an instructor compeltes the card (Marks message with "back" emoji)
 const completeStudentUpdates = async (data) => {
   let name = data.message.text.split(" // ");
   console.log("Data inside of completeStudentUpdates: ", data);
@@ -174,12 +178,15 @@ const completeStudentUpdates = async (data) => {
   }
 };
 
+//Removes student's name from their cohort question queue
+//Also deletes student from database
 const removeFromQueue = async (data, messageData) => {
   if (/^\d+$/.test(data.split("_")[1].split("-")?.join(""))) {
     console.log("No deletion required. Question card came from Flex Student");
     return;
   }
 
+  //Queries database by students name (data)
   let studentToDelete = await getDbEntryByStudentName(data);
   console.log(
     "Query return in function that removes student from their class queue: ",
@@ -204,11 +211,11 @@ const removeFromQueue = async (data, messageData) => {
       console.log(error);
     }
   }
+  //Deletes students question card entry from db
   await deleteDbEntryByStudentName(data);
-
 };
 
-
+//Handles sending Q card to instructor facing queue
 const sendQCardToInstructorChannel = async (
   req,
   res,
@@ -382,6 +389,7 @@ const sendQCardToInstructorChannel = async (
     console.error(error);
   }
 };
+//Handles sending question card to archive channel
 const sendQCardToArchiveChannel = async (
   req,
   payload,
@@ -492,6 +500,7 @@ const sendQCardToArchiveChannel = async (
   }
 };
 
+//Handles sending question card to channel where it was sent in
 const sendQCardToStudentChannel = async (req, payload) => {
   let questionCardTimeStamp;
   try {
@@ -583,13 +592,15 @@ const sendQCardToStudentChannel = async (req, payload) => {
   }
 };
 
+//Handles when an instructor "Completes" question card
 const instructorComplete = async (data, resolver) => {
+  //Queries database by students name (data)
   let cardTocomplete = await getDbEntryByStudentName(data);
   console.log(
     "query return in function that marks card as complete in archive(instructor resolution): ",
     cardTocomplete
   );
-
+  //Adds reaction to q card sent to archive channel when instructor finished card
   try {
     let archiveMark = await client.reactions.add({
       response_type: "status",
@@ -601,6 +612,7 @@ const instructorComplete = async (data, resolver) => {
   } catch (error) {
     console.log("Error in marking archive card : ", error);
   }
+  //Replies to q card in archive channel saying who completed the card
   try {
     let instructorResolution = await client.chat.postMessage({
       response_type: "status",
@@ -621,8 +633,7 @@ const instructorComplete = async (data, resolver) => {
       console.log(error);
     }
   }
-
-  // await InstructorQueue.deleteOne({ name: data });
+  //If the student was met with over zoom ("In on zoom"), the message in the student_updates channel is marked with "back" emoji
   if (cardTocomplete[0]?.hasOwnProperty("student_update_channel_id")) {
     try {
       let updateZoomStatus = await client.reactions.add({
@@ -637,7 +648,6 @@ const instructorComplete = async (data, resolver) => {
   } else {
     console.log(false);
   }
-  // await deleteDbEntryByStudentName(data)
 
 };
 const deleteDbEntryByStudentName = async (name) => {
@@ -657,6 +667,7 @@ const deleteDbEntryByStudentName = async (name) => {
     })
     .promise(); // The .promise() method turns the callback-based method into a Promise-based one
 };
+//Takes in a students name as a parameter, queries database, & returns db entry
 const getDbEntryByStudentName = async (name) => {
   const studentToDelete = {
     // The name of the DynamoDB table
@@ -676,6 +687,7 @@ const getDbEntryByStudentName = async (name) => {
   // studentToDelete = [response.Item]
   return [response.Item];
 };
+//Takes in channel ID as a parameter & tries to add bot to that channel
 const addBotToChannel = async (chanId) => {
   try {
     const result = await client.conversations.invite({
@@ -687,7 +699,7 @@ const addBotToChannel = async (chanId) => {
     console.log("Bot already in channel");
   }
 };
-
+//Sends students name to cohort queue channel
 const postToClassQueue = async (req, res, channelId, studentName) => {
   let response = await client.chat.postMessage({
     token: process.env.SLACK_BOT_TOKEN,
@@ -710,18 +722,21 @@ const postToClassQueue = async (req, res, channelId, studentName) => {
 async function handleInteractiveMessage(payload, res, chosenFile) {
   if (payload.actions[0].name === "zoom") {
     try {
-      //TODO Student Updates Channel
+      //Updates Student_updates channel with instructor + student name
       let updatePost = await client.chat.postMessage({
         response_type: "status",
         channel: "GNE49MV4M",
         text: payload.user.name + " // " + payload.original_message.text,
       });
+      //Function that makes database update signifying they are being met with on zoom
       await completeStudentUpdates(updatePost);
+      //Marks Instructor facing question card with black check mark signifying they are in on zoom
       await client.reactions.add({
         channel: payload.channel.id,
         name: "heavy_check_mark",
         timestamp: payload.message_ts,
       });
+      //sends black check mark to students channel
       await client.chat.postMessage({
         channel: payload.actions[0].value,
         text: ":heavy_check_mark:",
@@ -732,10 +747,12 @@ async function handleInteractiveMessage(payload, res, chosenFile) {
     }
   } else if (payload.actions[0].name === "slack") {
     try {
+      //Sends message to student's channel when an instructor clicks "In on Slack"
       let inOnSlack = await client.chat.postMessage({
         channel: payload.actions[0].value,
         text: "Taking a look! :eyes:",
       });
+      //Marks Instructor facing question card with eyes emoji signifying the card has been claimed
       await client.reactions.add({
         channel: payload.channel.id,
         name: "eyes",
@@ -753,6 +770,7 @@ async function handleInteractiveMessage(payload, res, chosenFile) {
       console.log(error);
     }
   } else if (payload.actions[0].name === "screenshot") {
+    //Sends randomly chosen image to students channel when instructor clicks "request screenshots"
     try {
       let screenshotRequest = await client.chat.postMessage({
         response_type: "status",
