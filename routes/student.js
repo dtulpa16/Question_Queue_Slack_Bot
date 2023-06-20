@@ -13,7 +13,6 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
   logLevel: LogLevel.DEBUG,
 });
 
-
 /**
  * @description Handles the submission of the /queue command
  */
@@ -36,7 +35,6 @@ router.post("/", async (req, res) => {
   }
 });
 /**
- *
  * @param {string} chanId Channel Id where command was entered
  * @param {string} userId ID of user who sent in the command + who will see ephemeral message
  * @returns 200 status code which ends request
@@ -61,25 +59,44 @@ const handleUserErr = async (chanId, userId) => {
  * @description Handles all Slack interactions (modal being submitted, interaction with question card)
  */
 router.post("/notify", async (req, res) => {
+  // Logging incoming modal
   console.log("Modal sent");
 
+  // Randomly choose a screenshot for the "request screenshot" button
   let chosenFile =
     screenshots.screenshots[
       Math.floor(Math.random() * screenshots.screenshots.length)
     ];
+
   try {
+    // Parsing the incoming payload from Slack
     let payload = JSON.parse(req.body.payload);
     console.log("payload ", payload);
+
+    // Check if the payload type is a view submission (i.e., modal submission)
     if (payload.type === "view_submission") {
+      // Handle the view submission and return a successful response
       await handleViewSubmission(payload, res);
       return res.status(200).send("");
-    } else if (payload.type === "interactive_message") {
+    }
+
+    // Check if the payload type is an interactive message
+    // (i.e., interactions with "In on Slack/Zoom" and "Request Screenshots" buttons)
+    else if (payload.type === "interactive_message") {
+      // Handle the interactive message
       await handleInteractiveMessage(payload, res, chosenFile);
-    } else if (payload.type === "block_actions") {
+    }
+
+    // Check if the payload type is block actions (i.e., instructor actions like "Jump 2 Card" or completing a question card)
+    else if (payload.type === "block_actions") {
+      // Handle the block actions
       await handleBlockActions(payload, res);
     }
+
+    // If none of the above, return a successful response
     return res.status(200).send("");
   } catch (error) {
+    // Log any errors
     console.log(error);
   }
 });
