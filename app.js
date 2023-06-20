@@ -8,10 +8,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/students", students);
 
 
-// const port = process.env.PORT || 3000;
-// app.listen(port, ()=>{
-//     console.log(`Server started on port: ${port}`)
-// })
-
 module.exports.handler = serverless(app);
 
+/**
+ * @description Flow of operations
+ * 
+ * @action Student Sends "/queue"
+ * @result app.js -> "/" endoint in routes/student.js -> qCardModal() in QuestionCardModal.js
+ * 
+ * @action Student submits question card
+ * @result app.js -> "/notify" endoint in routes/student.js -> handleViewSubmission() in helpers.js
+ * 
+ * @action Instructor clicks "In on Slack/Zoom" (Instructor claims card)
+ * @result app.js -> "/notify" endoint in routes/student.js -> handleInteractiveMessage() in helpers.js
+ *
+ * @action Instructor clicks "Complete" (Instructor completes card)
+ * @result app.js -> "/notify" endoint in routes/student.js -> handleBlockActions() in helpers.js
+ */
