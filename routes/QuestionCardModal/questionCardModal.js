@@ -1,6 +1,7 @@
 const { dynamoDb } = require("../../startup/db");
 
 const qCardModal = async (data, res, client) => {
+   //Params used for DynamoDB op for incrementing the "Question card opened" stat tracker 
   const paramsOpen = {
     TableName: "QuestionCardQueue",
     Key: { "student_name": "question_card_stat_tracker" },
@@ -10,7 +11,7 @@ const qCardModal = async (data, res, client) => {
     },
     ReturnValues: "UPDATED_NEW"
   };
-  
+  //Updates Stat tracker using above params. Yes, all of this is just used to increment a field by one...
   await dynamoDb.update(paramsOpen, function(err, data) {
     if (err) {
       console.error("Unable to update item. Error:", JSON.stringify(err, null, 2));
@@ -18,8 +19,8 @@ const qCardModal = async (data, res, client) => {
       console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
     }
   }).promise();
+  //Opens Modal. "blocks" array holds things like inputs, buttons, metadata, etc...
   try {
-    // Call the views.open method using the WebClient passed to listeners
     const result = await client.views.open({
       trigger_id: data.body.trigger_id,
 

@@ -30,7 +30,9 @@ router.post("/", async (req, res) => {
   if (req.body.text.length > 5) {
     await screenshots.showTime(req.body.text, req.body.channel_id, res, client);
   } else {
+    //Trys adding bot to the channel the command was sent in. (Bot needs to be in channel in order to use it)
     await addBotToChannel(req.body.channel_id);
+    //Calls function that will trigger modal to open
     return qCardModal(req, res, client);
   }
 });
