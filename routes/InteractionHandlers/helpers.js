@@ -56,6 +56,7 @@ const postQ = async (req, res, payload) => {
   studentQTS = await sendQCardToStudentChannel(req, payload);
 
   //Gets hyperlink to card. Will be used for "Jump 2 card" button
+  console.log("Changes have been deployed")
   let cardLink = await client.chat.getPermalink({
     channel: req.id,
     message_ts: studentQTS,
