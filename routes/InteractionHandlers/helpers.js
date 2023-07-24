@@ -593,7 +593,7 @@ const sendQCardToStudentChannel = async (req, payload) => {
     console.log(error);
   }
 };
-
+ 
 //Handles when an instructor "Completes" question card
 const instructorComplete = async (data, resolver) => {
   //Queries database by students name (data)
