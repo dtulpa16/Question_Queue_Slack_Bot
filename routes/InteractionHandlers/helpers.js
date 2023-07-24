@@ -694,7 +694,7 @@ const getDbEntryByStudentName = async (name) => {
 const addBotToChannel = async (chanId) => {
   try {
     const result = await client.conversations.invite({
-      token: process.env.SLACK_BOT_TOKEN,
+      token: process.env.AUTH_USER_TOKEN,
       channel: `${chanId}`,
       users: `U031EDDN62Y`,
     });
