@@ -9,12 +9,14 @@ let cohortStampsMap = {
   apus: ":stars:",
   seaborgium: ":106-sq:",
   aries: ":ram:",
+  aquarius: ":ocean:"
 };
 let classQueueChannels = {
   oganesson: "C04NWRCSHBR",
   aries: "C058YG3G144",
   apus: "C050ETWCUR1",
   seaborgium: "C04330EM5R6",
+  aquarius: "C05JFBVFKPU"
 };
 
 let studentQTS = "";
