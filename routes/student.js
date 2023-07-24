@@ -18,6 +18,13 @@ const client = new WebClient(process.env.SLACK_BOT_TOKEN, {
  */
 router.post("/", async (req, res) => {
   console.log("Original Req: ", req.body);
+  try{
+    if (req.body.text.length > 5) {
+      await screenshots.showTime(req.body.text, req.body.channel_id, res, client);
+    }
+  }catch(er){
+    console.log(er)
+  }
   //Checks if message came from the student's channel. Ends request if not sent from valid channel
   if (
     req.body.channel_name.includes("_") === false ||
