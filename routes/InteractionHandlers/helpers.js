@@ -11,7 +11,7 @@ let cohortStampsMap = {
   aries: ":ram:",
   aquarius: ":ocean:",
   camelopardalis: ":camel:",
-  bootes: ":peach:",
+  boötes: ":peach:",
 };
 let classQueueChannels = {
   oganesson: "C04NWRCSHBR",
@@ -20,7 +20,7 @@ let classQueueChannels = {
   seaborgium: "C04330EM5R6",
   aquarius: "C05JFBVFKPU",
   camelopardalis: "C05P3LGLPFT",
-  bootes: "C062QTG05MX",
+  boötes: "C062QTG05MX",
 };
 
 let studentQTS = "";
