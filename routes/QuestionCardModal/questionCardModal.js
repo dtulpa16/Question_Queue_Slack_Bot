@@ -24,7 +24,7 @@ const qCardModal = async (data, res, client) => {
     const result = await client.views.open({
       trigger_id: data.body.trigger_id,
 
-      response_action: "clear",
+      response_action: "update",
       view: {
         type: "modal",
         callback_id: "gratitude-modal",
