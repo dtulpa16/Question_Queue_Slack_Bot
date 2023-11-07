@@ -37,6 +37,38 @@ const postQ = async (req, res, payload) => {
     },
     ReturnValues: "UPDATED_NEW",
   };
+  let viewId;
+  try {
+    console.log("VIEWID: ", payload.view?.id);
+    const response = await client.views.update({
+      token: process.env.AUTH_USER_TOKEN,
+      view_id: payload.view?.id,
+      view: {
+        type: "modal",
+        title: {
+          type: "plain_text",
+          text: "Loading request",
+        },
+        close: {
+          type: "plain_text",
+          text: "Cancel",
+        },
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "plain_text",
+              text: ":man-biking: Question card processing... Sit tight!",
+            },
+          },
+        ],
+      },
+    });
+    viewId = response.view?.id;
+    console.log("UPDATED modal info: ", response);
+  } catch (er) {
+    console.log(er);
+  }
   //Updates Stat tracker using above params. Yes, all of this is just used to increment a field by one...
   await dynamoDb
     .update(paramsOpen, function (err, data) {
@@ -89,6 +121,36 @@ const postQ = async (req, res, payload) => {
   //Creates database entry with message data of the card sent to the archive channel as well as the students' cohort queue
   //Message data is used for deleting students' names from queue + adding emojis to messages (in on zoom, card being completed, etc...)
   await createDatabaseEntry(questionQueueArchiveData, cohortQueueMsgData);
+  try {
+    const response = await client.views.update({
+      token: process.env.AUTH_USER_TOKEN,
+      view_id: payload.view?.id,
+      view: {
+        type: "modal",
+        title: {
+          type: "plain_text",
+          text: "Success",
+        },
+        close: {
+          type: "plain_text",
+          text: "Close",
+        },
+        blocks: [
+          {
+            type: "section",
+            text: {
+              type: "plain_text",
+              text: "You're all set! You can now close the pop-up.",
+            },
+          },
+        ],
+      },
+    });
+    console.log("UPDATED modal info: ", response);
+    return res.status(200).send("");
+  } catch (er) {
+    console.log(er);
+  }
 };
 
 //Takes message data of message sent to their cohort queue + the archive channel and creates a database entry that will be used to remove students name from queue + mark archived card
