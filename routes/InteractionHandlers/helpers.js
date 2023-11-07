@@ -38,6 +38,28 @@ const postQ = async (req, res, payload) => {
     ReturnValues: "UPDATED_NEW",
   };
   let viewId;
+  
+  //Updates Stat tracker using above params. Yes, all of this is just used to increment a field by one...
+  await dynamoDb
+    .update(paramsOpen, function (err, data) {
+      if (err) {
+        console.error(
+          "Unable to update item. Error:",
+          JSON.stringify(err, null, 2)
+        );
+      } else {
+        console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+      }
+    })
+    .promise();
+
+  //Check if question card came from from a flex channel by seeing if studentName[1] is an integer without the dashes (-).
+  //Ex: studentName[1] from a flex channel will be something like "12-12-2023".
+  let { cohortStamp, studentName } = await getQCardCohortEmoji(req, res);
+  console.log("Cohort stamp: ", cohortStamp, "Student Name: ", studentName);
+
+  //Sends Q card details to student's channel
+  studentQTS = await sendQCardToStudentChannel(req, payload);
   try {
     console.log("VIEWID: ", payload.view?.id);
     const response = await client.views.update({
@@ -69,28 +91,6 @@ const postQ = async (req, res, payload) => {
   } catch (er) {
     console.log(er);
   }
-  //Updates Stat tracker using above params. Yes, all of this is just used to increment a field by one...
-  await dynamoDb
-    .update(paramsOpen, function (err, data) {
-      if (err) {
-        console.error(
-          "Unable to update item. Error:",
-          JSON.stringify(err, null, 2)
-        );
-      } else {
-        console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
-      }
-    })
-    .promise();
-
-  //Check if question card came from from a flex channel by seeing if studentName[1] is an integer without the dashes (-).
-  //Ex: studentName[1] from a flex channel will be something like "12-12-2023".
-  let { cohortStamp, studentName } = await getQCardCohortEmoji(req, res);
-  console.log("Cohort stamp: ", cohortStamp, "Student Name: ", studentName);
-
-  //Sends Q card details to student's channel
-  studentQTS = await sendQCardToStudentChannel(req, payload);
-
   //Gets hyperlink to card. Will be used for "Jump 2 card" button
   console.log("Changes have been deployed");
   let cardLink = await client.chat.getPermalink({
